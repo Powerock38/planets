@@ -297,9 +297,10 @@ class Ship {
   }
 
   draw() {
-    ctx.translate(this.x, this.y);
+    ctx.save();
+    ctx.translate(this.x,this.y);
     ctx.rotate(this.angle);
-    ctx.translate(-this.x, -this.y);
+    ctx.translate(-this.x,-this.y);
 
     //swaggy flames
     let flameColors = ["#FED7A4", "#F7AB57", "#F58021", "#F05D24", "#F26825"]
@@ -382,13 +383,14 @@ class Ship {
     ctx.closePath();
     ctx.fill();
 
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.restore();
   }
 
   static generateName() {
     return "Ship#" + Math.floor(Math.random() * 100);
   }
 }
+// Ship.list = [];
 
 class System {
   constructor(param) {
@@ -437,6 +439,15 @@ class System {
       }
     }
   }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 20;
+    ctx.stroke();
+    ctx.lineWidth = 1;
+  }
 }
 System.list = [];
 
@@ -464,12 +475,14 @@ class Star {
 function drawUniverse() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  //Zoom
-  ctx.scale(Zoom, Zoom);
+  Player.update();
 
   //center
   let ctrX = Player.x - canvas.width / (2 * Zoom);
   let ctrY = Player.y - canvas.height / (2 * Zoom);
+  ctx.save();
+  //Zoom
+  ctx.scale(Zoom, Zoom);
   ctx.translate(-ctrX, -ctrY);
 
   for (var h in System.list) {
@@ -481,12 +494,7 @@ function drawUniverse() {
       system.y - system.radius < ctrY + canvas.height / Zoom
     ) {
 
-      ctx.beginPath();
-      ctx.arc(system.x, system.y, system.radius, 0, 2 * Math.PI);
-      ctx.strokeStyle = "white";
-      ctx.lineWidth = 20;
-      ctx.stroke();
-      ctx.lineWidth = 1;
+      system.draw();
 
       if (system.star.x + system.star.radius > ctrX &&
         system.star.x - system.star.radius < ctrX + canvas.width / Zoom &&
@@ -543,17 +551,24 @@ function drawUniverse() {
     }
   }
 
-  Player.update();
   Player.draw();
 
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  // for (var i in Ship.list) {
+  //   Ship.list[i].update();
+  //   Ship.list[i].draw();
+  // }
+
+  ctx.restore();
 }
 
 var Player = new Ship({
-  name: "Player",
+  name: "Player"
 });
 
+// Ship.list[0] = Player;
+
 document.addEventListener('keydown', (e) => {
+  // e.preventDefault();
   if (e.key === "z") Player.speedUp = true;
   else if (e.key === "s") Player.speedDown = true;
   else if (e.key === "q") Player.turnLeft = true;
@@ -561,6 +576,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.addEventListener('keyup', (e) => {
+  // e.preventDefault();
   if (e.key === "z") Player.speedUp = false;
   else if (e.key === "s") Player.speedDown = false;
   else if (e.key === "q") Player.turnLeft = false;
@@ -568,32 +584,15 @@ document.addEventListener('keyup', (e) => {
 });
 
 function generateUniverse() {
-  let radiusSum = 0;
   for (var i = 0; i < 100; i++) {
     let angle = Math.random() * 2 * Math.PI;
     let rad = systemMaxRadius * 2 * (i + 1);
-    // let rad = rnd(radiusSum, systemMaxRadius * (i + 1));
     let x = Math.round(rad * Math.cos(angle));
     let y = Math.round(rad * Math.sin(angle));
-
-    let sys = new System({
+    System.list[i] = new System({
       x: x,
       y: y,
     });
-
-    System.list[i] = sys;
-    radiusSum += sys.radius * 2;
-
-    // for (var j in System.list) {
-    //   if (j != i) {
-    //     let fsys = System.list[j];
-    //     let distance = Math.sqrt(Math.pow(sys.x - fsys.x, 2) + Math.pow(sys.y - fsys.y, 2));
-    //     if (distance < sys.radius + fsys.radius + 1000) {
-    //       i--;
-    //       break;
-    //     }
-    //   }
-    // }
   }
 }
 
@@ -601,9 +600,6 @@ generateUniverse();
 
 Player.x = System.list[0].x + System.list[0].star.radius;
 Player.y = System.list[0].y + System.list[0].star.radius;
-
-// System.list[0] = new System({x:-10000,y:-10000});
-// System.list[1] = new System({x:10000,y:10000});
 
 const update = setInterval(() => {
   drawUniverse();

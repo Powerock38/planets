@@ -19,10 +19,6 @@
 const canvas = document.getElementById("mainframe");
 const ctx = canvas.getContext("2d");
 
-//fullscreen canvas
-canvas.width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-canvas.height = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-
 //universe's constants
 //const universeRadius = 2000000;
 const systemMinRadius = 10000;
@@ -58,6 +54,15 @@ function rnd(min, max) {
 //random float between min,max included
 function rndFloat(min, max) {
   return Math.random() * (max - min) + min;
+}
+
+function hexToRgb(hex) {
+  let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
 }
 
 var Ores = {
@@ -135,117 +140,6 @@ var Ores = {
   }
 };
 
-class Planet {
-  constructor(param) {
-    // IDEA:
-    // telluric or gas ?
-    // rotation : axis & period
-    // atmosphere
-    // minerals, composition
-    this.name = Planet.generateName();
-    this.radius = rnd(planetMinRadius, planetMaxRadius);
-    this.x = 0;
-    this.y = 0;
-    this.friction = rndFloat(0.93, 0.99);
-    this.baseMass = rnd(this.radius * 200, this.radius * 500);
-
-    this.color = rndChoose([
-      "#FED7A4", "#F7AB57", "#F58021", "#F05D24", "#F26825",
-      "#E3E6E8", "#C1C0C0", "#949494", "#848686", "#7E7F7F",
-      "#A1ACB6", "#6C7B48", "#B18C73", "#151340", "#212D60",
-      "#DFA964", "#A07845", "#AE946E", "#52575D", "#21384C",
-      "#F6CDAA", "#FAB176", "#DB6B30", "#6F2315", "#4F1F11",
-      "#CEECF9", "#C3E6F0", "#BCDEE7", "#AACBD2", "#739097",
-      "#CBDEF2", "#867AB9", "#7563AC", "#6751A2", "#4B3D81",
-      "#F9E4C4", "#DCC592", "#B99F7A", "#8F6F40", "#412F21",
-      "#E1D399", "#B3AE84", "#C1B685", "#E5D59D", "#9D9366",
-      "#CEDCEB", "#969FA1", "#798791", "#4C5062", "#424C5C",
-    ]);
-
-    this.mass = this.baseMass;
-    this.ores = [];
-    let nbOres = rnd(1, 10); //how much ore patches
-    while (this.ores.length < nbOres) {
-      for (var i in Ores) {
-        let ore = Ores[i];
-        let chance = Math.random();
-        if (ore.rarity > chance) {
-          this.ores.push({
-            id: i,
-            quantity: rnd(0, Math.min(ore.max, this.radius - 10))
-          });
-
-          if (this.ores.length >= nbOres)
-            break;
-        }
-      }
-    }
-
-    this.refreshMass();
-
-    for (var i in param) {
-      if (param[i] !== undefined)
-        this[i] = param[i];
-    }
-
-    this.generateOresPos();
-  }
-
-  draw() {
-    // draw the circle (the planet)
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-    ctx.fillStyle = this.color;
-    ctx.fill();
-
-    //gravity ring
-    if (Zoom > 0.06) {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius + this.gravity, 0, 2 * Math.PI);
-      ctx.strokeStyle = "white";
-      ctx.stroke();
-    }
-
-    // draw all ore patches
-    if (Zoom > 0.01) {
-      for (var i in this.ores) {
-        //draw a patch
-        ctx.beginPath();
-        for (var j in this.ores[i]) {
-          ctx.arc(this.x + this.ores[i].x, this.y + this.ores[i].y, this.ores[i].quantity, 0, 2 * Math.PI);
-        }
-        ctx.fillStyle = Ores[this.ores[i].id].color;
-        ctx.fill();
-      }
-    }
-  }
-
-  refreshMass() {
-    this.mass = this.baseMass;
-    for (var i in this.ores) {
-      this.mass += (Ores[this.ores[i].id].mass * oresMassMultiplier) * this.ores[i].quantity;
-    }
-    this.mass = this.mass;
-    this.gravity = this.mass * planetGravityMassMultiplier; //gravity radius, from the planet surface
-  }
-
-  generateOresPos() { //generate ores positions
-    for (var i in this.ores) {
-      let ore = this.ores[i];
-      let angle = Math.random() * 2 * Math.PI;
-      let rad = rnd(0, this.radius - ore.quantity); // distance from planet's center to ore's center
-      let x = Math.round(rad * Math.cos(angle));
-      let y = Math.round(rad * Math.sin(angle));
-      ore.x = x;
-      ore.y = y;
-    }
-  }
-
-  static generateName() {
-    return "Planet#" + Math.floor(Math.random() * 100);
-  }
-}
-//Planet.list = [];
 
 class Ship {
   constructor(param) {
@@ -392,6 +286,136 @@ class Ship {
 }
 // Ship.list = [];
 
+
+class Planet {
+  constructor(param) {
+    // IDEA:
+    // telluric or gas ?
+    // rotation : axis & period
+    // atmosphere
+    this.name = Planet.generateName();
+    this.radius = rnd(planetMinRadius, planetMaxRadius);
+    this.x = 0;
+    this.y = 0;
+    this.friction = rndFloat(0.93, 0.99);
+    this.baseMass = rnd(this.radius * 200, this.radius * 500);
+
+    this.color = rndChoose([
+      "#FED7A4", "#F7AB57", "#F58021", "#F05D24", "#F26825",
+      "#E3E6E8", "#C1C0C0", "#949494", "#848686", "#7E7F7F",
+      "#A1ACB6", "#6C7B48", "#B18C73", "#151340", "#212D60",
+      "#DFA964", "#A07845", "#AE946E", "#52575D", "#21384C",
+      "#F6CDAA", "#FAB176", "#DB6B30", "#6F2315", "#4F1F11",
+      "#CEECF9", "#C3E6F0", "#BCDEE7", "#AACBD2", "#739097",
+      "#CBDEF2", "#867AB9", "#7563AC", "#6751A2", "#4B3D81",
+      "#F9E4C4", "#DCC592", "#B99F7A", "#8F6F40", "#412F21",
+      "#E1D399", "#B3AE84", "#C1B685", "#E5D59D", "#9D9366",
+      "#CEDCEB", "#969FA1", "#798791", "#4C5062", "#424C5C",
+    ]);
+
+    this.mass = this.baseMass;
+    this.ores = [];
+    let nbOres = rnd(1, 10); //how much ore patches
+    while (this.ores.length < nbOres) {
+      for (var i in Ores) {
+        let ore = Ores[i];
+        let chance = Math.random();
+        if (ore.rarity > chance) {
+          this.ores.push({
+            id: i,
+            quantity: rnd(0, Math.min(ore.max, this.radius - 10))
+          });
+          if (this.ores.length >= nbOres) break;
+        }
+      }
+    }
+
+    this.refreshMass();
+
+    for (var i in param) {
+      if (param[i] !== undefined)
+        this[i] = param[i];
+    }
+
+    this.generateOresPos();
+  }
+
+  draw() {
+    // draw the circle (the planet)
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+    ctx.fillStyle = this.color;
+    ctx.fill();
+
+    //gravity ring
+    if (Zoom > 0.06) {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius + this.gravity, 0, 2 * Math.PI);
+      ctx.strokeStyle = "white";
+      ctx.stroke();
+    }
+
+    // draw all ore patches
+    if (Zoom > 0.01) {
+      for (var i in this.ores) {
+        //draw a patch
+        ctx.beginPath();
+        for (var j in this.ores[i]) {
+          ctx.arc(this.x + this.ores[i].x, this.y + this.ores[i].y, this.ores[i].quantity, 0, 2 * Math.PI);
+        }
+        ctx.fillStyle = Ores[this.ores[i].id].color;
+        ctx.fill();
+      }
+    }
+  }
+
+  refreshMass() {
+    this.mass = this.baseMass;
+    for (var i in this.ores) {
+      this.mass += (Ores[this.ores[i].id].mass * oresMassMultiplier) * this.ores[i].quantity;
+    }
+    this.gravity = this.mass * planetGravityMassMultiplier; //gravity radius, from the planet surface
+  }
+
+  generateOresPos() { //generate ores positions
+    for (var i in this.ores) {
+      let ore = this.ores[i];
+      let angle = Math.random() * 2 * Math.PI;
+      let rad = rnd(0, this.radius - ore.quantity); // distance from planet's center to ore's center
+      let x = Math.round(rad * Math.cos(angle));
+      let y = Math.round(rad * Math.sin(angle));
+      ore.x = x;
+      ore.y = y;
+    }
+  }
+
+  static generateName() {
+    return "Planet#" + Math.floor(Math.random() * 100);
+  }
+}
+
+class Star {
+  constructor(param) {
+    this.x = 0;
+    this.y = 0;
+    this.color = rndChoose(["#FFD27D", "#FFA371", "#A6A8FF", "#FFFA86", "#A87BFF", "#FFFFFF", "#FED7A4", "#F7AB57", "#F58021", "#F05D24", "#F26825"]);
+    this.radius = rnd(starMinRadius, starMaxRadius);
+
+    for (var i in param) {
+      if (param[i] !== undefined)
+        this[i] = param[i];
+    }
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+    let rgb = hexToRgb(this.color);
+    ctx.fillStyle = "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", 0.8)";
+    ctx.fill();
+  }
+}
+
 class System {
   constructor(param) {
     this.x = 0;
@@ -415,8 +439,7 @@ class System {
   generatePlanets() {
     for (var i = 0; i < this.nbPlanet; i++) {
       let angle = Math.random() * 2 * Math.PI;
-      let rad = rnd(0, this.radius - (planetMaxRadius + planetMaxRadius * 100 * planetGravityMassMultiplier));
-      // let rad = rnd(this.star.radius, this.radius);
+      let rad = rnd(0, this.radius - (planetMaxRadius + planetMaxRadius * 200 * planetGravityMassMultiplier));
       let x = Math.round(rad * Math.cos(angle) + this.x);
       let y = Math.round(rad * Math.sin(angle) + this.y);
 
@@ -431,7 +454,7 @@ class System {
         if (j != i) {
           let fpla = this.planetList[j];
           let distance = Math.sqrt(Math.pow(pla.x - fpla.x, 2) + Math.pow(pla.y - fpla.y, 2));
-          if (distance < pla.radius + pla.gravity + fpla.gravity + fpla.radius) {
+          if (distance < pla.radius + Math.max(pla.gravity, fpla.gravity) + fpla.radius) {
             i--;
             break;
           }
@@ -451,37 +474,21 @@ class System {
 }
 System.list = [];
 
-class Star {
-  constructor(param) {
-    this.x = 0;
-    this.y = 0;
-    this.color = rndChoose(["#FFD27D", "#FFA371", "#A6A8FF", "#FFFA86", "#A87BFF", "#FFFFFF", "#FED7A4", "#F7AB57", "#F58021", "#F05D24", "#F26825"]);
-    this.radius = rnd(starMinRadius, starMaxRadius);
-
-    for (var i in param) {
-      if (param[i] !== undefined)
-        this[i] = param[i];
-    }
-  }
-
-  draw() {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-    ctx.fillStyle = this.color;
-    ctx.fill();
-  }
-}
+// --------------------------------------------------------------------------------
 
 function drawUniverse() {
+  //fullscreen canvas
+  canvas.width = document.documentElement.clientWidth;
+  canvas.height = document.documentElement.clientHeight;
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   Player.update();
 
-  //center
+  //center & zoom
   let ctrX = Player.x - canvas.width / (2 * Zoom);
   let ctrY = Player.y - canvas.height / (2 * Zoom);
   ctx.save();
-  //Zoom
   ctx.scale(Zoom, Zoom);
   ctx.translate(-ctrX, -ctrY);
 

@@ -1,4 +1,5 @@
 /* TODO:
+  - Atmospheres ?
   - Different speeds
   - Better looking ship
   - Upgrades
@@ -160,10 +161,7 @@ class Ship {
     this.rotationRate = 0; //4 * Math.PI / 180;
     this.thrust = 0.5;
 
-    for (var i in param) {
-      if (param[i] !== undefined)
-        this[i] = param[i];
-    }
+    for (var i in param) if (param[i] !== undefined) this[i] = param[i];
   }
 
   update() {
@@ -217,11 +215,11 @@ class Ship {
         let length = rnd(5, 10);
         ctx.strokeStyle = rndChoose(flameColors);
         ctx.beginPath();
-        let orig_x = this.x + 4;
-        let orig_y = this.y - 3;
+        let orig_x = this.x + 15;
+        let orig_y = this.y - 4;
         ctx.moveTo(orig_x, orig_y);
         ctx.lineTo(Math.round(orig_x + Math.cos(angle) * length), Math.round(orig_y + Math.sin(angle) * length));
-        orig_y = this.y + 3;
+        orig_y = this.y + 4;
         ctx.moveTo(orig_x, orig_y);
         ctx.lineTo(Math.round(orig_x + Math.cos(angle) * length), Math.round(orig_y + Math.sin(angle) * length));
         ctx.stroke();
@@ -271,7 +269,7 @@ class Ship {
     //ship's red nose
     ctx.fillStyle = "red";
     ctx.beginPath();
-    ctx.moveTo(this.x + 10, this.y);
+    ctx.moveTo(this.x, this.y);
     ctx.lineTo(this.x + 5, this.y - 2.5);
     ctx.lineTo(this.x + 5, this.y + 2.5);
     ctx.closePath();
@@ -289,16 +287,13 @@ class Ship {
 
 class Planet {
   constructor(param) {
-    // IDEA:
-    // telluric or gas ?
-    // rotation : axis & period
-    // atmosphere
     this.name = Planet.generateName();
     this.radius = rnd(planetMinRadius, planetMaxRadius);
     this.x = 0;
     this.y = 0;
     this.friction = rndFloat(0.93, 0.99);
-    this.baseMass = rnd(this.radius * 200, this.radius * 500);
+    this.mass = rnd(this.radius * 200, this.radius * 500);
+    this.gravity = this.mass * planetGravityMassMultiplier;
 
     this.color = rndChoose([
       "#FED7A4", "#F7AB57", "#F58021", "#F05D24", "#F26825",
@@ -313,7 +308,6 @@ class Planet {
       "#CEDCEB", "#969FA1", "#798791", "#4C5062", "#424C5C",
     ]);
 
-    this.mass = this.baseMass;
     this.ores = [];
     let nbOres = rnd(1, 10); //how much ore patches
     while (this.ores.length < nbOres) {
@@ -330,14 +324,21 @@ class Planet {
       }
     }
 
-    this.refreshMass();
-
-    for (var i in param) {
-      if (param[i] !== undefined)
-        this[i] = param[i];
-    }
+    for (var i in param) if (param[i] !== undefined) this[i] = param[i];
 
     this.generateOresPos();
+  }
+
+  generateOresPos() { //generate ores positions
+    for (var i in this.ores) {
+      let ore = this.ores[i];
+      let angle = Math.random() * 2 * Math.PI;
+      let rad = rnd(0, this.radius - ore.quantity); // distance from planet's center to ore's center
+      let x = Math.round(rad * Math.cos(angle));
+      let y = Math.round(rad * Math.sin(angle));
+      ore.x = x;
+      ore.y = y;
+    }
   }
 
   draw() {
@@ -369,26 +370,6 @@ class Planet {
     }
   }
 
-  refreshMass() {
-    this.mass = this.baseMass;
-    for (var i in this.ores) {
-      this.mass += (Ores[this.ores[i].id].mass * oresMassMultiplier) * this.ores[i].quantity;
-    }
-    this.gravity = this.mass * planetGravityMassMultiplier; //gravity radius, from the planet surface
-  }
-
-  generateOresPos() { //generate ores positions
-    for (var i in this.ores) {
-      let ore = this.ores[i];
-      let angle = Math.random() * 2 * Math.PI;
-      let rad = rnd(0, this.radius - ore.quantity); // distance from planet's center to ore's center
-      let x = Math.round(rad * Math.cos(angle));
-      let y = Math.round(rad * Math.sin(angle));
-      ore.x = x;
-      ore.y = y;
-    }
-  }
-
   static generateName() {
     return "Planet#" + Math.floor(Math.random() * 100);
   }
@@ -401,10 +382,7 @@ class Star {
     this.color = rndChoose(["#FFD27D", "#FFA371", "#A6A8FF", "#FFFA86", "#A87BFF", "#FFFFFF", "#FED7A4", "#F7AB57", "#F58021", "#F05D24", "#F26825"]);
     this.radius = rnd(starMinRadius, starMaxRadius);
 
-    for (var i in param) {
-      if (param[i] !== undefined)
-        this[i] = param[i];
-    }
+    for (var i in param) if (param[i] !== undefined) this[i] = param[i];
   }
 
   draw() {
@@ -423,9 +401,7 @@ class System {
     this.nbPlanet = rnd(10, 30);
     this.radius = rnd(systemMinRadius, systemMaxRadius);
 
-    for (var i in param) {
-      if (param[i] !== undefined) this[i] = param[i];
-    }
+    for (var i in param) if (param[i] !== undefined) this[i] = param[i];
 
     this.star = new Star({
       x: this.x,
@@ -535,7 +511,6 @@ function drawUniverse() {
               if (dist < ore.quantity) {
                 //console.log("Mining " + ore.id);
                 ore.quantity--;
-                planet.refreshMass();
               }
             }
           }

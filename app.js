@@ -1,7 +1,15 @@
 /* TODO:
   - Atmospheres ?
-  - Different speeds
+  - Fuel
+  - Multiple speeds
   - Better looking ship
+  - Structures
+    - Stations
+    - Quarries
+    - Fast-transport systems
+    - Dyson sphere
+    - Death Stars
+    - Planet harverster
   - Upgrades
     - Mining range
     - Mining speed
@@ -37,22 +45,13 @@ var io = require('socket.io')(serv,{});
 
 var SOCKET_LIST = {};
 
-//universe's constants
-systemMinRadius = 10000;
-systemMaxRadius = 20000;
-oresMassMultiplier = 0.01;
-planetMinRadius = 100;
-planetMaxRadius = 1000;
-planetGravityMassMultiplier = 0.005;
-starMinRadius = 2000;
-starMaxRadius = 5000;
-
 initPack = {ship:[],system:[]};
 // removePack = {ship:[],system:[]};
 
 require("./client/common.js");
 const Item = require("./client/Inventory.js").Item;
 const Inventory = require("./client/Inventory.js").Inventory;
+const Craft = require("./Craft.js");
 const Ship = require("./Classes.js").Ship;
 const Planet = require("./Classes.js").Planet;
 const System = require("./Classes.js").System;

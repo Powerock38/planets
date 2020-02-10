@@ -168,12 +168,12 @@ Ship.list = {};
 
 class Planet {
   constructor(param) {
-    this.radius = rnd(planetMinRadius, planetMaxRadius);
+    this.radius = rnd(500, 1000);
     this.x = 0;
     this.y = 0;
-    this.friction = rndFloat(0.93, 0.99);
+    this.friction = rndFloat(0.95, 0.99);
     this.mass = rnd(this.radius * 200, this.radius * 500);
-    this.gravity = this.mass * planetGravityMassMultiplier;
+    this.gravity = this.mass * 0.005;
 
     this.color = rndChoose([
       "#FED7A4", "#F7AB57", "#F58021", "#F05D24", "#F26825",
@@ -229,10 +229,10 @@ class System {
     this.x = 0;
     this.y = 0;
     this.nbPlanet = rnd(10, 30);
-    this.radius = rnd(systemMinRadius, systemMaxRadius);
+    this.radius = rnd(10000, 20000);
 
     this.starColor = rndChoose(["#FFD27D", "#FFA371", "#A6A8FF", "#FFFA86", "#A87BFF", "#FFFFFF", "#FED7A4", "#F7AB57", "#F58021", "#F05D24", "#F26825"]);
-    this.starRadius = rnd(starMinRadius, starMaxRadius);
+    this.starRadius = rnd(2000, 5000);
 
     for (var i in param) if (param[i] !== undefined) this[i] = param[i];
 
@@ -246,7 +246,7 @@ class System {
   generatePlanets() {
     for (var i = 0; i < this.nbPlanet; i++) {
       let angle = Math.random() * 2 * Math.PI;
-      let rad = rnd(0, this.radius - (planetMaxRadius + planetMaxRadius * 200 * planetGravityMassMultiplier));
+      let rad = rnd(0, this.radius);
       let x = Math.round(rad * Math.cos(angle) + this.x);
       let y = Math.round(rad * Math.sin(angle) + this.y);
 

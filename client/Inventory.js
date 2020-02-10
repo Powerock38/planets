@@ -45,7 +45,6 @@ class Inventory {
 
 }
 
-
 class Item {
   constructor(id,name,desc) {
     this.id = id;

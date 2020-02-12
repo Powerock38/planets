@@ -81,17 +81,19 @@ socket.on('remove',(data)=>{
 document.addEventListener('keydown', (e) => {
   // e.preventDefault();
   if (e.key === "z") socket.emit('keyPress',{inputId:'up',state:true});
-  else if (e.key === "s") socket.emit('keyPress',{inputId:'down',state:true});
-  else if (e.key === "q") socket.emit('keyPress',{inputId:'left',state:true});
-  else if (e.key === "d") socket.emit('keyPress',{inputId:'right',state:true});
+  if (e.key === "s") socket.emit('keyPress',{inputId:'down',state:true});
+  if (e.key === "q") socket.emit('keyPress',{inputId:'left',state:true});
+  if (e.key === "d") socket.emit('keyPress',{inputId:'right',state:true});
+  if (e.key === "e") socket.emit('keyPress',{inputId:'mine',state:true});
 });
 
 document.addEventListener('keyup', (e) => {
   // e.preventDefault();
   if (e.key === "z") socket.emit('keyPress',{inputId:'up',state:false});
-  else if (e.key === "s") socket.emit('keyPress',{inputId:'down',state:false});
-  else if (e.key === "q") socket.emit('keyPress',{inputId:'left',state:false});
-  else if (e.key === "d") socket.emit('keyPress',{inputId:'right',state:false});
+  if (e.key === "s") socket.emit('keyPress',{inputId:'down',state:false});
+  if (e.key === "q") socket.emit('keyPress',{inputId:'left',state:false});
+  if (e.key === "d") socket.emit('keyPress',{inputId:'right',state:false});
+  if (e.key === "e") socket.emit('keyPress',{inputId:'mine',state:false});
 });
 
 //mousewheel zoom

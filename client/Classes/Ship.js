@@ -36,7 +36,8 @@ class Ship {
         ctx.closePath();
         ctx.stroke();
       }
-    } else if (this.speedDown) {
+    }
+    if (this.speedDown) {
       for (var i = 0; i < 10; i++) {
         let angle = rnd(-10, 10) * (Math.PI / 180);
         let length = rnd(5, 10);
@@ -67,7 +68,8 @@ class Ship {
         ctx.closePath();
         ctx.stroke();
       }
-    } else if (this.turnRight) {
+    }
+    if (this.turnRight) {
       for (var i = 0; i < 10; i++) {
         let angle = rnd(-10, 10) * (Math.PI / 180);
         angle -= Math.PI / 2;

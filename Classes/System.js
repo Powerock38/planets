@@ -1,17 +1,15 @@
 const Planet = require("./Planet.js");
 
 class System {
-  constructor(param) {
+  constructor(x, y) {
     this.id = uuid("sys");
-    this.x = 0;
-    this.y = 0;
+    this.x = x;
+    this.y = y;
     this.nbPlanet = rnd(10, 25);
     this.radius = rnd(10000, 20000);
 
     this.starColor = rndChoose(["#FFD27D", "#FFA371", "#A6A8FF", "#FFFA86", "#A87BFF", "#FFFFFF", "#FED7A4", "#F7AB57", "#F58021", "#F05D24", "#F26825"]);
     this.starRadius = rnd(2000, 5000);
-
-    for (var i in param) if (param[i] !== undefined) this[i] = param[i];
 
     this.planetList = [];
     this.generatePlanets();

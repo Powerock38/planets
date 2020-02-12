@@ -72,10 +72,7 @@ function generateUniverse() {
     let rad = 20000 * 2 * (i + 1);
     let x = Math.round(rad * Math.cos(angle));
     let y = Math.round(rad * Math.sin(angle));
-    System.list[i] = new System({
-      x: x,
-      y: y,
-    });
+    System.list[i] = new System(x, y);
   }
 }
 

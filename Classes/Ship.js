@@ -2,12 +2,12 @@ const Inventory = require("./Inventory.js");
 const System = require("./System.js");
 
 class Ship {
-  constructor(param) {
+  constructor(id, x, y) {
     this.name = Ship.generateName();
-    this.id = "";
+    this.id = id;
 
-    this.x = 0;
-    this.y = 0;
+    this.x = x;
+    this.y = y;
     this.angle = 0;
 
     this.turnLeft = false;
@@ -15,13 +15,16 @@ class Ship {
     this.speedUp = false;
     this.speedDown = false;
 
+    this.mining = false;
+    this.miningRate = 1;
+    this.canMine = true;
+
     this.spdX = 0;
     this.spdY = 0;
     this.maxSpeed = 20;
     this.rotationRate = 0;
+    this.maxRotationRate = 0.5;
     this.thrust = 0.5;
-
-    for (var i in param) if (param[i] !== undefined) this[i] = param[i];
 
     this.cargo = new Inventory([], this.id);
 
@@ -33,19 +36,24 @@ class Ship {
     let thrustX = this.thrust * Math.cos(this.angle);
     let thrustY = this.thrust * Math.sin(this.angle);
 
-    //let speed = Math.sqrt(this.spdX * this.spdX + this.spdY * this.spdY);
-    //maxspeed
-
     if (this.speedUp) {
-      this.spdX += thrustX;
-      this.spdY += thrustY;
-    } else if (this.speedDown) {
-      this.spdX -= thrustX;
-      this.spdY -= thrustY;
+      if(this.spdX < this.maxSpeed)
+        this.spdX += thrustX;
+      if(this.spdY < this.maxSpeed)
+        this.spdY += thrustY;
+    }
+    if (this.speedDown) {
+      if(this.spdX > -this.maxSpeed)
+        this.spdX -= thrustX;
+      if(this.spdY > -this.maxSpeed)
+        this.spdY -= thrustY;
     }
 
-    if (this.turnRight) this.rotationRate += 0.005;
-    if (this.turnLeft) this.rotationRate -= 0.005;
+    if (this.turnRight && this.rotationRate < this.maxRotationRate) {
+      this.rotationRate += 0.005;
+    } else if (this.turnLeft && this.rotationRate > -this.maxRotationRate) {
+      this.rotationRate -= 0.005;
+    }
 
     this.angle += this.rotationRate;
 
@@ -70,12 +78,18 @@ class Ship {
             this.spdY *= planet.friction;
             this.rotationRate *= planet.friction;
 
-            //ore collision
-            for (let k in planet.ores) {
-              let ore = planet.ores[k];
-              let oreDistance = getDistance({x: this.x, y: this.y},{x: planet.x + ore.x, y: planet.y + ore.y});
-              if (oreDistance < ore.amount) {
-                ore.mine(this.cargo, 1);
+            //mining
+            if(this.mining && this.canMine) {
+              for (let k in planet.ores) {
+                let ore = planet.ores[k];
+                let oreDistance = getDistance({x: this.x, y: this.y},{x: planet.x + ore.x, y: planet.y + ore.y});
+                if(oreDistance < ore.amount) {
+                  ore.mine(this.cargo, 1);
+                  this.canMine = false;
+                  setTimeout(()=>{
+                    this.canMine = true;
+                  },1000 / this.miningRate);
+                }
               }
             }
 
@@ -128,11 +142,11 @@ class Ship {
   }
 
   static onConnect(socket) {
-    let player = new Ship({
-      id: socket.id,
-      x: System.list[0].x + System.list[0].starRadius,
-      y: System.list[0].y + System.list[0].starRadius
-    });
+    let player = new Ship(
+      socket.id,
+      System.list[0].x + System.list[0].starRadius,
+      System.list[0].y + System.list[0].starRadius
+    );
 
     socket.on('keyPress',(data)=>{
       if(data.inputId === 'right')
@@ -143,6 +157,8 @@ class Ship {
         player.speedUp = data.state;
       else if(data.inputId === 'down')
         player.speedDown = data.state;
+      else if(data.inputId === 'mine')
+        player.mining = data.state;
     });
 
     //send the current gamestate to the newly logged user

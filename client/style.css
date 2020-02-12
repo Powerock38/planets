@@ -13,4 +13,11 @@ body {
   top: 0;
   left: 0;
   color: white;
+  font-family: sans-serif;
+}
+
+#hud #inventory ul {
+  margin-top: 10px;
+  margin-left: 20px;
+  padding-left: 0;
 }

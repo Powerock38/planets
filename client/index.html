@@ -4,14 +4,19 @@
     <meta charset="utf-8">
     <title>Planets</title>
     <link rel="stylesheet" type="text/css" href="style.css">
-    
+
     <script src="/socket.io/socket.io.js"></script>
-    <script src="Inventory.js"></script>
+    <script src="Classes/Ship.js"></script>
+    <script src="Classes/Planet.js"></script>
+    <script src="Classes/System.js"></script>
+    <script src="Classes/Items.js"></script>
     <script src="common.js"></script>
     <script src="main.js" charset="utf-8" defer></script>
   </head>
   <body>
     <canvas id="mainframe" width=1000 height=1000></canvas>
-    <!-- <div id="hud"></div> -->
+    <div id="hud">
+      <div id="inventory"></div>
+    </div>
   </body>
 </html>

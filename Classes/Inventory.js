@@ -1,14 +1,14 @@
 class Inventory {
-  constructor(items) {
-    this.items = [];
-    if(items !== undefined)
-      this.items = items;
+  constructor(items, ownerId) {
+    this.items = items;
+    this.ownerId = ownerId;
   }
 
   addItem(id, amount) {
     for (let i in this.items) {
       if (this.items[i].id === id) {
         this.items[i].amount += amount;
+        this.update();
         return;
       }
     }
@@ -17,9 +17,10 @@ class Inventory {
       id: id,
       amount: amount
     });
+    this.update();
   }
 
-  removeItem(id, amount) { // return false = removed too much than necessary / true = all good
+  removeItem(id, amount) { // return false = cant remove too much than necessary / true = all good
     for (let i in this.items) {
       if (this.items[i].id === id) {
         if(this.items[i].amount < amount)
@@ -30,6 +31,7 @@ class Inventory {
         if(this.items[i].amount <= 0)
           this.items.splice(i,1);
 
+        this.update();
         return true;
       }
     }
@@ -43,21 +45,9 @@ class Inventory {
     }
   }
 
-}
-
-class Item {
-  constructor(id,name,desc) {
-    this.id = id;
-    this.name = name;
-    this.desc = desc;
-    Item.list[this.id] = this;
+  update() {
+    SOCKET_LIST[this.ownerId].emit('updateInventory', this.items);
   }
 }
-Item.list = {};
 
-if(typeof module !== "undefined") {
-  module.exports = {
-    Inventory: Inventory,
-    Item: Item
-  };
-}
+module.exports = Inventory;

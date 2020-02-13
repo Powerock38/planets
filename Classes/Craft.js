@@ -7,12 +7,18 @@ class Craft {
     Craft.list[this.id] = this;
   }
 
-  craft(inv) { // false = craft failed, true = craft succeeded
+  canCraft(inv) {
     for(let i in this.itemsIn) {
       if(!inv.hasItem(this.itemsIn[i].id, this.itemsIn[i].amount)) {
         return false;
       }
     }
+    return true;
+  }
+
+  craft(inv) {
+    if(!canCraft(inv))
+      return;
 
     for(let i in this.itemsIn) {
       inv.removeItem(this.itemsIn[i].id, this.itemsIn[i].amount);
@@ -21,8 +27,6 @@ class Craft {
     for(let i in this.itemsOut) {
       inv.addItem(this.itemsOut[i].id, this.itemsOut[i].amount);
     }
-
-    return true;
   }
 }
 Craft.list = {};

@@ -80,3 +80,8 @@ new Item(
   "",
   {color: "#b87333"}
 );
+new Item(
+  "fuel",
+  "Rocket fuel",
+  "A good chemical cocktail that makes your spaceship go forward"
+);

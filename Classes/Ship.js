@@ -26,7 +26,9 @@ class Ship {
     this.maxRotationRate = 0.5;
     this.thrust = 0.5;
 
-    this.cargo = new Inventory([], this.id);
+    this.cargo = new Inventory([
+      {id:"fuel", amount: 999999999},
+    ], this.id);
 
     Ship.list[this.id] = this;
     initPack.ship.push(this.getInitPack());
@@ -36,13 +38,15 @@ class Ship {
     let thrustX = this.thrust * Math.cos(this.angle);
     let thrustY = this.thrust * Math.sin(this.angle);
 
-    if (this.speedUp) {
+    if (this.speedUp && this.cargo.hasItem("fuel",1)) {
+      this.cargo.removeItem("fuel",1);
       if(this.spdX < this.maxSpeed)
         this.spdX += thrustX;
       if(this.spdY < this.maxSpeed)
         this.spdY += thrustY;
     }
-    if (this.speedDown) {
+    if (this.speedDown && this.cargo.hasItem("fuel",1)) {
+      this.cargo.removeItem("fuel",1);
       if(this.spdX > -this.maxSpeed)
         this.spdX -= thrustX;
       if(this.spdY > -this.maxSpeed)

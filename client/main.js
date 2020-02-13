@@ -1,4 +1,4 @@
-var socket = io();
+const connection = new WebSocket('ws://localhost:2000');
 
 const canvas = document.getElementById("mainframe");
 const ctx = canvas.getContext("2d");
@@ -19,64 +19,62 @@ function hexToRgb(hex) {
   } : null;
 }
 
-//init
+
 var selfId = null;
 var inventory;
-socket.on('init',(data)=>{
-  for(let i in data.ship)
-    new Ship(data.ship[i]);
 
-  for(let i in data.system)
-    new System(data.system[i]);
+//listener
+connection.onmessage = (message)=>{
+  let msg = JSON.parse(message.data);
+  let data = msg.data;
 
-  // first init
-  if(data.selfId !== undefined) {
-    selfId = data.selfId;
-    inventory = new Inventory(data.inventory);
-  }
-});
+  if(msg.h === 'init') {
+    for(let i in data.ship)
+      new Ship(data.ship[i]);
 
-//update
-socket.on('update',(data)=>{
-  for(let i in data.ship) {
-    let pack = data.ship[i];
-    let ship = Ship.list[pack.id];
+    for(let i in data.system)
+      new System(data.system[i]);
 
-    if(ship) {
-      for(let o in pack) {
-        if(pack.hasOwnProperty(o) && pack[o] !== undefined && o !== "id") {
-          ship[o] = pack[o];
+    // first init
+    if(data.selfId !== undefined) {
+      selfId = data.selfId;
+      inventory = new Inventory(data.inventory);
+    }
+  } else if(msg.h === 'update') {
+    for(let i in data.ship) {
+      let pack = data.ship[i];
+      let ship = Ship.list[pack.id];
+
+      if(ship) {
+        for(let o in pack) {
+          if(pack.hasOwnProperty(o) && pack[o] !== undefined && o !== "id") {
+            ship[o] = pack[o];
+          }
         }
       }
     }
-  }
 
-  for(let i in data.system) {
-    let pack = data.system[i];
-    let system = System.list[pack.id];
+    for(let i in data.system) {
+      let pack = data.system[i];
+      let system = System.list[pack.id];
 
-    if(system) {
-      for(let o in pack.planetList) {
-        system.planetList[o].ores = pack.planetList[o].ores;
+      if(system) {
+        for(let o in pack.planetList) {
+          system.planetList[o].ores = pack.planetList[o].ores;
+        }
       }
     }
+  } else if(msg.h === 'updateInventory') {
+    if(inventory) {
+      inventory.items = data;
+      inventory.refresh();
+    }
+  } else if(msg.h === 'remove') {
+    for(let i in data.ship) {
+      delete Ship.list[data.ship[i]];
+    }
   }
-});
-
-socket.on('updateInventory',(items)=>{
-  if(!selfId) return;
-
-  inventory.items = items;
-  inventory.refresh();
-});
-
-//remove
-socket.on('remove',(data)=>{
-  for(let i in data.ship) {
-    delete Ship.list[data.ship[i]];
-  }
-});
-
+}
 
 //keyboard
 var keys = [
@@ -90,7 +88,8 @@ var keys = [
 function keyboardInput(e, state) {
   for(let i in keys) {
     let key = keys[i];
-    if(e.key === key.key) socket.emit('keyPress',{inputId:key.action, state:state});
+    if(e.key === key.key)
+      connection.send(JSON.stringify({h: 'keyPress', data: {inputId: key.action, state: state}}));
   }
 }
 
@@ -163,7 +162,9 @@ function drawUniverseLoop() {
 
     ctx.restore();
   }
-  requestAnimationFrame(drawUniverseLoop);
+  // requestAnimationFrame(drawUniverseLoop);
 }
 
-drawUniverseLoop();
+setInterval(()=>{
+  drawUniverseLoop();
+}, 1000 / 30);

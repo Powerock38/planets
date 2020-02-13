@@ -141,33 +141,40 @@ class Ship {
     return "Ship#" + Math.floor(Math.random() * 100);
   }
 
-  static onConnect(socket) {
+  static onConnect(ws) {
     let player = new Ship(
-      socket.id,
+      ws.id,
       System.list[0].x + System.list[0].starRadius,
       System.list[0].y + System.list[0].starRadius
     );
 
-    socket.on('keyPress',(data)=>{
-      if(data.inputId === 'right')
-        player.turnRight = data.state;
-      else if(data.inputId === 'left')
-        player.turnLeft = data.state;
-      else if(data.inputId === 'up')
-        player.speedUp = data.state;
-      else if(data.inputId === 'down')
-        player.speedDown = data.state;
-      else if(data.inputId === 'mine')
-        player.mining = data.state;
+    ws.on('message', (msg)=>{
+      msg = JSON.parse(msg);
+      let data = msg.data;
+
+      if(msg.h === 'keyPress') {
+        if(data.inputId === 'right')
+          player.turnRight = data.state;
+        else if(data.inputId === 'left')
+          player.turnLeft = data.state;
+        else if(data.inputId === 'up')
+          player.speedUp = data.state;
+        else if(data.inputId === 'down')
+          player.speedDown = data.state;
+        else if(data.inputId === 'mine')
+          player.mining = data.state;
+      }
     });
 
     //send the current gamestate to the newly logged user
-    socket.emit('init',{
-      selfId: socket.id,
-      inventory: player.cargo.items,
-      ship: Ship.getAllInitPack(),
-      system: System.getAllInitPack()
-    });
+    ws.send(JSON.stringify({h: 'init',
+      data: {
+        selfId: ws.id,
+        inventory: player.cargo.items,
+        ship: Ship.getAllInitPack(),
+        system: System.getAllInitPack()
+      }
+    }));
   }
 
   static onDisconnect(socket) {

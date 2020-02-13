@@ -34,9 +34,10 @@
 // var mongojs = require("mongojs");
 // var db = mongojs("localhost:27017/planets",['account']);
 
-var express = require('express');
-var app = express();
-var serv = require('http').Server(app);
+const express = require('express');
+const app = express();
+const server = require('http').Server(app);
+const WebSocket = require('ws');
 
 app.get('/',(req,res)=>{
   res.sendFile(__dirname + '/client/index.html');
@@ -44,10 +45,7 @@ app.get('/',(req,res)=>{
 app.use('/client',express.static(__dirname + '/client'));
 app.use(express.static(__dirname + '/client'));
 
-serv.listen(2000);
-console.log("Server started");
-
-var io = require('socket.io')(serv,{});
+const wss = new WebSocket.Server({ server });
 
 uuid = (prefix)=>{
   return prefix + '-xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -76,34 +74,41 @@ function generateUniverse() {
   }
 }
 
-io.sockets.on('connection', (socket)=>{
-  socket.id = uuid("skt");
-  SOCKET_LIST[socket.id] = socket;
-  console.log('socket connection ' + socket.id);
+wss.on('connection', (ws)=>{
+  ws.id = uuid("skt");
+  SOCKET_LIST[ws.id] = ws;
+  console.log('socket connection ' + ws.id);
 
-  Ship.onConnect(socket);
+  Ship.onConnect(ws);
 
-  socket.on('disconnect',()=>{
-    delete SOCKET_LIST[socket.id];
-    Ship.onDisconnect(socket);
-    console.log('socket deconnection ' + socket.id);
+  ws.on('close',(e)=>{
+    delete SOCKET_LIST[ws.id];
+    Ship.onDisconnect(ws);
+    console.log("socket deconnection " + ws.id + "\n" + e);
+  });
+
+  ws.on('error',(e)=>{
+    return console.log(e);
   });
 });
 
 
 setInterval(() => {
-  let pack = {
+  let updatePack = {
     ship: Ship.update(),
     system: System.update(),
   }
 
-  for(var i in SOCKET_LIST){
-    let socket = SOCKET_LIST[i];
+  for(var i in SOCKET_LIST) {
+    let ws = SOCKET_LIST[i];
+
     if(initPack.ship.length > 0 || initPack.system.length > 0)
-      socket.emit('init', initPack);
-    socket.emit('update', pack);
+      ws.send(JSON.stringify({h: 'init', data: initPack}));
+
     if(removePack.ship.length > 0)
-      socket.emit('remove', removePack);
+      ws.send(JSON.stringify({h: 'remove', data: removePack}));
+
+    ws.send(JSON.stringify({h: 'update', data: updatePack}));
   }
 
   initPack.ship = [];
@@ -112,3 +117,6 @@ setInterval(() => {
 }, 1000 / 30);
 
 generateUniverse();
+
+server.listen(2000);
+console.log("Server started");

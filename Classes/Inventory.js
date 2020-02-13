@@ -46,7 +46,7 @@ class Inventory {
   }
 
   update() {
-    SOCKET_LIST[this.ownerId].emit('updateInventory', this.items);
+    SOCKET_LIST[this.ownerId].send(JSON.stringify({h: 'updateInventory', data: this.items}));
   }
 }
 

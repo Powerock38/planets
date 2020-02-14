@@ -1,7 +1,7 @@
 /* TODO:
   - Atmospheres ?
-  - Fuel
   - Multiple speeds
+  - Max speed
   - Better looking ship
   - Science, Population
   - Structures
@@ -19,6 +19,8 @@
     - Cargo size
     - Thrusters
     - Turning thrusters
+    - Engine > changes fuel type
+    - Laser canons
     - HUD
       - Gravity & System rings
       - Distances
@@ -55,13 +57,16 @@ uuid = (prefix)=>{
 }
 
 SOCKET_LIST = {};
+DEBUG = true;
 
-initPack = {ship:[],system:[]};
-removePack = {ship:[]};
+initPack = {ship:[],system:[],laser:[]};
+removePack = {ship:[],laser:[]};
 
 require("./client/common.js");
 const Craft = require("./Classes/Craft.js");
-const Ship = require("./Classes/Ship.js");
+const Ship = require("./Classes/Ship.js").Ship;
+const Laser = require("./Classes/Ship.js").Laser;
+// const Laser = require("./Classes/Laser.js");
 const System = require("./Classes/System.js");
 
 function generateUniverse() {
@@ -70,8 +75,12 @@ function generateUniverse() {
     let rad = 20000 * 2 * (i + 1);
     let x = Math.round(rad * Math.cos(angle));
     let y = Math.round(rad * Math.sin(angle));
-    System.list[i] = new System(x, y);
+    new System(x, y);
   }
+
+  let spawnSys = rndChoose(System.list);
+  SPAWNx = spawnSys.x + spawnSys.starRadius;
+  SPAWNy = spawnSys.y + spawnSys.starRadius;
 }
 
 wss.on('connection', (ws)=>{
@@ -90,6 +99,16 @@ wss.on('connection', (ws)=>{
   ws.on('error',(e)=>{
     return console.log(e);
   });
+
+  if(DEBUG) {
+    ws.on('message',(msg)=>{
+      msg = JSON.parse(msg);
+      let data = msg.data;
+
+      if(msg.h === 'eval')
+        eval(data);
+    });
+  }
 });
 
 
@@ -97,15 +116,16 @@ setInterval(() => {
   let updatePack = {
     ship: Ship.update(),
     system: System.update(),
-  }
+    laser: Laser.update(),
+  };
 
   for(var i in SOCKET_LIST) {
     let ws = SOCKET_LIST[i];
 
-    if(initPack.ship.length > 0 || initPack.system.length > 0)
+    if(initPack.ship.length > 0 || initPack.system.length > 0 || initPack.laser.length > 0)
       ws.send(JSON.stringify({h: 'init', data: initPack}));
 
-    if(removePack.ship.length > 0)
+    if(removePack.ship.length > 0 || removePack.laser.length > 0)
       ws.send(JSON.stringify({h: 'remove', data: removePack}));
 
     ws.send(JSON.stringify({h: 'update', data: updatePack}));
@@ -113,7 +133,10 @@ setInterval(() => {
 
   initPack.ship = [];
   initPack.system = [];
+  initPack.laser = [];
+
   removePack.ship = [];
+  removePack.laser = [];
 }, 1000 / 30);
 
 generateUniverse();

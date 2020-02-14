@@ -19,6 +19,10 @@ function hexToRgb(hex) {
   } : null;
 }
 
+function serval(str) {
+  connection.send(JSON.stringify({h: 'eval',data: str}));
+}
+
 
 var selfId = null;
 var inventory;
@@ -34,6 +38,9 @@ connection.onmessage = (message)=>{
 
     for(let i in data.system)
       new System(data.system[i]);
+
+    for(let i in data.laser)
+      new Laser(data.laser[i]);
 
     // first init
     if(data.selfId !== undefined) {
@@ -64,6 +71,19 @@ connection.onmessage = (message)=>{
         }
       }
     }
+
+    for(let i in data.laser) {
+      let pack = data.laser[i];
+      let laser = Laser.list[pack.id];
+
+      if(laser) {
+        for(let o in pack) {
+          if(pack.hasOwnProperty(o) && pack[o] !== undefined && o !== "id") {
+            laser[o] = pack[o];
+          }
+        }
+      }
+    }
   } else if(msg.h === 'updateInventory') {
     if(inventory) {
       inventory.items = data;
@@ -72,6 +92,10 @@ connection.onmessage = (message)=>{
   } else if(msg.h === 'remove') {
     for(let i in data.ship) {
       delete Ship.list[data.ship[i]];
+    }
+
+    for(let i in data.laser) {
+      delete Laser.list[data.laser[i]];
     }
   }
 }
@@ -83,6 +107,7 @@ var keys = [
   {key:"q",action:"left"},
   {key:"d",action:"right"},
   {key:"e",action:"mine"},
+  {key:" ",action:"shoot"},
 ];
 
 function keyboardInput(e, state) {
@@ -104,7 +129,6 @@ document.addEventListener('keyup', (e) => {
 //mousewheel zoom
 var Zoom = 1.001;
 document.addEventListener("wheel", e => {
-  let delta = Math.sign(e.deltaY);
   if (e.deltaY > 0 && Zoom > 0.01) {
     Zoom -= 0.01;
   } else if (e.deltaY < 0 && Zoom < 2) {
@@ -152,6 +176,12 @@ function drawUniverseLoop() {
           }
         }
       }
+    }
+
+    for (let i in Laser.list) {
+      let laser = Laser.list[i];
+      if(isInSight(laser.x, laser.y, 10))
+        laser.draw();
     }
 
     for (let i in Ship.list) {

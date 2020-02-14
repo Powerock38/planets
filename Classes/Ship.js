@@ -1,5 +1,6 @@
 const Inventory = require("./Inventory.js");
 const System = require("./System.js");
+// const Laser = require("./Laser.js");
 
 class Ship {
   constructor(id, x, y) {
@@ -10,14 +11,22 @@ class Ship {
     this.y = y;
     this.angle = 0;
 
+    this.hpMax = 10;
+    this.hp = this.hpMax;
+
     this.turnLeft = false;
     this.turnRight = false;
     this.speedUp = false;
     this.speedDown = false;
 
     this.mining = false;
-    this.miningRate = 1;
     this.canMine = true;
+    this.miningRate = 1;
+    this.miningRange = 10;
+
+    this.attack = false;
+    this.fireReady = true;
+    this.fireRate = 5;
 
     this.spdX = 0;
     this.spdY = 0;
@@ -40,22 +49,19 @@ class Ship {
 
     if (this.speedUp && this.cargo.hasItem("fuel",1)) {
       this.cargo.removeItem("fuel",1);
-      if(this.spdX < this.maxSpeed)
-        this.spdX += thrustX;
-      if(this.spdY < this.maxSpeed)
-        this.spdY += thrustY;
+      this.spdX += thrustX;
+      this.spdY += thrustY;
     }
     if (this.speedDown && this.cargo.hasItem("fuel",1)) {
       this.cargo.removeItem("fuel",1);
-      if(this.spdX > -this.maxSpeed)
-        this.spdX -= thrustX;
-      if(this.spdY > -this.maxSpeed)
-        this.spdY -= thrustY;
+      this.spdX -= thrustX;
+      this.spdY -= thrustY;
     }
 
     if (this.turnRight && this.rotationRate < this.maxRotationRate) {
       this.rotationRate += 0.005;
-    } else if (this.turnLeft && this.rotationRate > -this.maxRotationRate) {
+    }
+    if (this.turnLeft && this.rotationRate > -this.maxRotationRate) {
       this.rotationRate -= 0.005;
     }
 
@@ -66,12 +72,12 @@ class Ship {
   }
 
   updateCollisions() {
-    // if in system range
     for (let i in System.list) {
       let system = System.list[i];
       let systemDistance = getDistance({x: this.x, y: this.y},{x: system.x, y: system.y});
-      if (systemDistance <= system.radius) {
 
+      // if in system range
+      if (systemDistance <= system.radius) {
         //planet collision
         for (let j in system.planetList) {
           let planet = system.planetList[j];
@@ -87,12 +93,13 @@ class Ship {
               for (let k in planet.ores) {
                 let ore = planet.ores[k];
                 let oreDistance = getDistance({x: this.x, y: this.y},{x: planet.x + ore.x, y: planet.y + ore.y});
-                if(oreDistance < ore.amount) {
+
+                if(oreDistance < ore.amount + this.miningRange) {
                   ore.mine(this.cargo, 1);
                   this.canMine = false;
                   setTimeout(()=>{
                     this.canMine = true;
-                  },1000 / this.miningRate);
+                  }, 1000 / this.miningRate);
                 }
               }
             }
@@ -101,6 +108,7 @@ class Ship {
           } else if (planetDistance <= planet.gravity + planet.radius && planetDistance >= planet.radius) {
             let angle = Math.atan2(planet.y - this.y, planet.x - this.x);
             let speed = planet.mass / (planetDistance * planetDistance);
+
             this.spdX += speed * Math.cos(angle);
             this.spdY += speed * Math.sin(angle);
           }
@@ -109,9 +117,31 @@ class Ship {
     }
   }
 
+  updateAttack() {
+    if(this.attack && this.fireReady){
+      this.shoot();
+      this.fireReady = false;
+      setTimeout(()=>{
+        this.fireReady = true;
+      }, 1000 / this.fireRate);
+    }
+  }
+
   update() {
     this.updateCollisions();
     this.updateSpeed();
+    this.updateAttack();
+  }
+
+  shoot() {
+    new Laser(
+      this.x,
+      this.y,
+      this.angle,
+      this.id,
+      this.spdX,
+      this.spdY
+    );
   }
 
   getInitPack() {
@@ -148,8 +178,8 @@ class Ship {
   static onConnect(ws) {
     let player = new Ship(
       ws.id,
-      System.list[0].x + System.list[0].starRadius,
-      System.list[0].y + System.list[0].starRadius
+      SPAWNx,
+      SPAWNy
     );
 
     ws.on('message', (msg)=>{
@@ -167,6 +197,8 @@ class Ship {
           player.speedDown = data.state;
         else if(data.inputId === 'mine')
           player.mining = data.state;
+        else if(data.inputId === 'shoot')
+          player.attack = data.state;
       }
     });
 
@@ -204,4 +236,85 @@ class Ship {
 }
 Ship.list = {};
 
-module.exports = Ship;
+class Laser {
+  constructor(x, y, angle, ownerId, spdX, spdY) {
+    this.id = uuid("lsr");
+    this.x = x;
+    this.y = y;
+    this.angle = angle;
+    this.ownerId = ownerId;
+    this.spdX = Math.cos(this.angle) * 50 + spdX;
+    this.spdY = Math.sin(this.angle) * 50 + spdY;
+    this.toRemove = false;
+    this.timer = 100;
+
+    Laser.list[this.id] = this;
+    initPack.laser.push(this.getInitPack());
+  }
+
+  update() {
+    if(this.timer-- <= 0)
+      this.toRemove = true;
+    this.x += this.spdX;
+    this.y += this.spdY;
+    for(let i in Ship.list) {
+      let p = Ship.list[i];
+      if(getDistance(p, this) < 30 && this.ownerId !== p.id) {
+        p.hp--;
+
+        if(p.hp <= 0) {
+          p.hp = p.hpMax;
+          p.x = SPAWNx;
+          p.y = SPAWNy;
+        }
+
+        this.toRemove = true;
+      }
+    }
+  }
+
+  getInitPack() {
+    return {
+      id: this.id,
+      x: this.x,
+      y: this.y,
+      angle: this.angle,
+    }
+  }
+
+  getUpdatePack() {
+    return {
+      id: this.id,
+      x: this.x,
+      y: this.y,
+      angle: this.angle,
+    }
+  }
+
+  static getAllInitPack() {
+    let lasers = [];
+    for(let i in Laser.list)
+      lasers.push(Laser.list[i].getInitPack());
+    return lasers;
+  }
+
+  static update() {
+    let pack = [];
+    for(let i in Laser.list){
+      let laser = Laser.list[i];
+      laser.update();
+      if(laser.toRemove) {
+        delete Laser.list[i];
+        removePack.laser.push(laser.id);
+      } else
+        pack.push(laser.getUpdatePack());
+    }
+    return pack;
+  }
+}
+Laser.list = {};
+
+module.exports = {
+  Ship: Ship,
+  Laser: Laser
+};

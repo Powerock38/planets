@@ -1,6 +1,6 @@
 //choose a random item from array
 rndChoose = (arr)=>{
-  return arr[Math.floor(Math.random() * arr.length)];
+  return arr[Object.keys(arr)[Math.floor(Math.random() * Object.keys(arr).length)]];
 }
 
 //random int between min,max included

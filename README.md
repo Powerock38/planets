@@ -1,5 +1,5 @@
 # Planets
-Node JS + HTML multiplayer game featuring randomly generated planets and spaceships
+NodeJS + HTML multiplayer game featuring randomly generated planets and spaceships
 
 ## How to install & run
 1. `git clone https://github.com/Powerock38/planets`
@@ -9,32 +9,37 @@ Node JS + HTML multiplayer game featuring randomly generated planets and spacesh
 1. Go to http://localhost:2000/
 1. Profit !
 
-
 ## TODO:
-* Atmospheres ?
 * Multiple speeds
 * Max speed
 * Better looking ship
-* Science, Population
+* Factions
 * Black hole
 * Structures
-  * Stations (make Science points)
-  * Quarries
+  * Station (makes Science points)
+  * Quarry
   * Fast-transport systems
     * Hyperline : fast acceleration towards a specific direction
     * Wormholes ?
   * Death Stars
   * Dyson sphere
-  * Planet harverster
+  * Planet harvester
   * Black hole harvester
-* Upgrades
+* Upgrades: Craft (old part + resources) = (new part)
+  * Shield (resistance / HP)
   * Mining range
   * Mining speed
+  * Mining power
   * Cargo size
-  * Thrusters
-  * Turning thrusters
-  * Engine > changes fuel type
+  * Thrusters power
+  * Turning thrusters power
+  * Engine -> changes fuel type
   * Laser canons
+    * fire rate
+    * laser size
+    * damage
+    * laser speed
+    * laser durability (hp)
   * HUD
     * Gravity & System rings
     * Distances

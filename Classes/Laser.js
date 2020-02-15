@@ -1,21 +1,24 @@
 class Laser {
   constructor(x, y, angle, ownerId, spdX, spdY) {
-    this.id = uuid("lsr");
     this.x = x;
     this.y = y;
     this.angle = angle;
     this.ownerId = ownerId;
-    this.spdX = Math.cos(this.angle) * 50 + spdX;
-    this.spdY = Math.sin(this.angle) * 50 + spdY;
+    this.speed = 50;
+    this.hp = 100;
+    this.damage = 10;
+
+    this.id = uuid("lsr");
+    this.spdX = Math.cos(this.angle) * this.speed + spdX;
+    this.spdY = Math.sin(this.angle) * this.speed + spdY;
     this.toRemove = false;
-    this.timer = 100;
 
     Laser.list[this.id] = this;
     initPack.laser.push(this.getInitPack());
   }
 
   update() {
-    if(this.timer-- <= 0)
+    if(this.hp-- <= 0)
       this.toRemove = true;
     this.x += this.spdX;
     this.y += this.spdY;
@@ -25,20 +28,29 @@ class Laser {
       let target = shiplist[i];
 
       if(getDistance(target, this) < 30 && this.ownerId !== target.id) {
-        target.hp--;
-
-        if(target.hp <= 0) {
-          target.hp = target.hpMax;
-          target.spdX = 0;
-          target.spdY = 0;
-          target.angle = 0;
-          target.rotationRate = 0;
-          target.x = SPAWNx;
-          target.y = SPAWNy;
-        }
-
+        this.hit(target);
         this.toRemove = true;
       }
+    }
+  }
+
+
+  hit(target) {
+    if(target.shieldHP <= 0) {
+      target.hp -= this.damage;
+
+      if(target.hp <= 0) {
+        target.hp = target.hpMax;
+        target.spdX = 0;
+        target.spdY = 0;
+        target.angle = 0;
+        target.rotationRate = 0;
+        target.x = SPAWNx;
+        target.y = SPAWNy;
+        target.shieldHP = target.shieldMaxHP;
+      }
+    } else {
+      target.shieldHP -= Math.round(this.damage * (1 - target.shieldPower));
     }
   }
 

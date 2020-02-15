@@ -11,8 +11,12 @@ class Ship {
     this.y = y;
     this.angle = 0;
 
-    this.hpMax = 10;
+    this.hpMax = 100;
     this.hp = this.hpMax;
+
+    this.shieldMaxHP = 50;
+    this.shieldHP = this.shieldMaxHP;
+    this.shieldPower = 0.2;
 
     this.turnLeft = false;
     this.turnRight = false;

@@ -64,9 +64,8 @@ removePack = {ship:[],laser:[]};
 
 require("./client/common.js");
 const Craft = require("./Classes/Craft.js");
-const Ship = require("./Classes/Ship.js").Ship;
-const Laser = require("./Classes/Ship.js").Laser;
-// const Laser = require("./Classes/Laser.js");
+const Ship = require("./Classes/Ship.js");
+const Laser = require("./Classes/Laser.js");
 const System = require("./Classes/System.js");
 
 function generateUniverse() {
@@ -105,8 +104,16 @@ wss.on('connection', (ws)=>{
       msg = JSON.parse(msg);
       let data = msg.data;
 
-      if(msg.h === 'eval')
-        eval(data);
+      if(msg.h === 'eval') {
+        try {
+          eval(data);
+        }
+        catch(error) {
+          console.log("==== SERVAL ERROR ====");
+          console.log(error);
+          console.log("======================");
+        }
+      }
     });
   }
 });

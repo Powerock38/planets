@@ -1,6 +1,6 @@
 const Inventory = require("./Inventory.js");
 const System = require("./System.js");
-// const Laser = require("./Laser.js");
+const Laser = require("./Laser.js");
 
 class Ship {
   constructor(id, x, y) {
@@ -236,85 +236,4 @@ class Ship {
 }
 Ship.list = {};
 
-class Laser {
-  constructor(x, y, angle, ownerId, spdX, spdY) {
-    this.id = uuid("lsr");
-    this.x = x;
-    this.y = y;
-    this.angle = angle;
-    this.ownerId = ownerId;
-    this.spdX = Math.cos(this.angle) * 50 + spdX;
-    this.spdY = Math.sin(this.angle) * 50 + spdY;
-    this.toRemove = false;
-    this.timer = 100;
-
-    Laser.list[this.id] = this;
-    initPack.laser.push(this.getInitPack());
-  }
-
-  update() {
-    if(this.timer-- <= 0)
-      this.toRemove = true;
-    this.x += this.spdX;
-    this.y += this.spdY;
-    for(let i in Ship.list) {
-      let p = Ship.list[i];
-      if(getDistance(p, this) < 30 && this.ownerId !== p.id) {
-        p.hp--;
-
-        if(p.hp <= 0) {
-          p.hp = p.hpMax;
-          p.x = SPAWNx;
-          p.y = SPAWNy;
-        }
-
-        this.toRemove = true;
-      }
-    }
-  }
-
-  getInitPack() {
-    return {
-      id: this.id,
-      x: this.x,
-      y: this.y,
-      angle: this.angle,
-    }
-  }
-
-  getUpdatePack() {
-    return {
-      id: this.id,
-      x: this.x,
-      y: this.y,
-      angle: this.angle,
-    }
-  }
-
-  static getAllInitPack() {
-    let lasers = [];
-    for(let i in Laser.list)
-      lasers.push(Laser.list[i].getInitPack());
-    return lasers;
-  }
-
-  static update() {
-    let pack = [];
-    for(let i in Laser.list){
-      let laser = Laser.list[i];
-      laser.update();
-      if(laser.toRemove) {
-        delete Laser.list[i];
-        removePack.laser.push(laser.id);
-      } else
-        pack.push(laser.getUpdatePack());
-    }
-    return pack;
-  }
-}
-Laser.list = {};
-
-module.exports = {
-  Ship: Ship,
-  Laser: Laser
-};
+module.exports = Ship;

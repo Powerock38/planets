@@ -1,2 +1,2 @@
 # planets
-HTML/JS canvas game featuring randomly generated planets and a spaceship
+Node JS + HTML multiplayer game featuring randomly generated planets and spaceships

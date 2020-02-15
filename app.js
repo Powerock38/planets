@@ -1,38 +1,3 @@
-/* TODO:
-  - Atmospheres ?
-  - Multiple speeds
-  - Max speed
-  - Better looking ship
-  - Science, Population
-  - Structures
-    - Stations (make Science points)
-    - Quarries
-    - Fast-transport systems
-      - Hyperline : fast acceleration towards a specific direction
-    - Death Stars
-    - Dyson sphere
-    - Planet harverster
-    - Black hole harvester
-  - Upgrades
-    - Mining range
-    - Mining speed
-    - Cargo size
-    - Thrusters
-    - Turning thrusters
-    - Engine > changes fuel type
-    - Laser canons
-    - HUD
-      - Gravity & System rings
-      - Distances
-      - System info
-      - Planet info
-        - Ore analyzer
-      - Crosshair
-      - Compass
-      - Minimap
-        - Waypoints
-*/
-
 // var mongojs = require("mongojs");
 // var db = mongojs("localhost:27017/planets",['account']);
 

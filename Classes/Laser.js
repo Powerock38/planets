@@ -23,12 +23,16 @@ class Laser {
     let shiplist = require('./Ship.js').list;
     for(let i in shiplist) {
       let target = shiplist[i];
-      
+
       if(getDistance(target, this) < 30 && this.ownerId !== target.id) {
         target.hp--;
 
         if(target.hp <= 0) {
           target.hp = target.hpMax;
+          target.spdX = 0;
+          target.spdY = 0;
+          target.angle = 0;
+          target.rotationRate = 0;
           target.x = SPAWNx;
           target.y = SPAWNy;
         }

@@ -220,14 +220,14 @@ class Ship {
 
   static getAllInitPack() {
     let ships = [];
-    for (var i in Ship.list)
+    for (let i in Ship.list)
       ships.push(Ship.list[i].getInitPack());
     return ships;
   }
 
   static update() {
     let pack = [];
-    for (var i in Ship.list) {
+    for (let i in Ship.list) {
       Ship.list[i].update();
       pack.push(Ship.list[i].getUpdatePack());
     }

@@ -26,13 +26,13 @@ NodeJS + HTML multiplayer game featuring randomly generated planets and spaceshi
   * Planet harvester
   * Black hole harvester
 * Upgrades: Craft (old part + resources) = (new part)
-  * Shield (resistance / HP)
-  * Mining range
-  * Mining speed
-  * Mining power
+  * Ship health points
+  * Shield (power / HP)
+  * Mining range (arm)
+  * Mining speed (drill)
   * Cargo size
   * Thrusters power
-  * Turning thrusters power
+  * Maneuvering thrusters power
   * Engine -> changes fuel type
   * Laser canons
     * fire rate

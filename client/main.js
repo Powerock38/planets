@@ -86,9 +86,15 @@ connection.onmessage = (message)=>{
     }
   } else if(msg.h === 'updateInventory') {
     if(inventory) {
-      inventory.items = data;
+      inventory.items = data.items;
       inventory.refresh();
     }
+
+    Craft.list = {};
+    for(let i in data.crafts)
+      new Craft(data.crafts[i]);
+    Craft.refresh();
+
   } else if(msg.h === 'remove') {
     for(let i in data.ship) {
       delete Ship.list[data.ship[i]];

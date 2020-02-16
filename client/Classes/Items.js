@@ -8,7 +8,8 @@ class Inventory {
     let str = "<ul>";
     for(let i in this.items) {
       let item = Item.list[this.items[i].id];
-      str += "<li>" + item.name + " (" + this.items[i].amount + ") </li>";
+      if(item)
+        str += "<li>" + item.name + " (" + this.items[i].amount + ") </li>";
     }
     document.getElementById("inventory").innerHTML = str + "</ul>";
   }
@@ -20,7 +21,9 @@ class Item {
     this.name = name;
     this.desc = desc;
 
-    for (var i in param) if (param[i] !== undefined) this[i] = param[i];
+    for (let i in param)
+      if (param[i] !== undefined)
+        this[i] = param[i];
     Item.list[this.id] = this;
   }
 }
@@ -84,4 +87,51 @@ new Item(
   "fuel",
   "Rocket fuel",
   "A good chemical cocktail that makes your spaceship go forward"
+);
+
+//ship parts
+new Item(
+  "mining_drill_1",
+  "Basic Mining Drill",
+  ""
+);
+new Item(
+  "mining_arm_1",
+  "Basic Mining Arm",
+  ""
+);
+new Item(
+  "armouring_1",
+  "Basic Armouring",
+  ""
+);
+new Item(
+  "shield_1",
+  "Basic Shield",
+  ""
+);
+new Item(
+  "thrusters_main_1",
+  "Basic Main Thrusters",
+  ""
+);
+new Item(
+  "thrusters_side_1",
+  "Basic Maneuvring Thrusters",
+  ""
+);
+new Item(
+  "engine_1",
+  "Basic Engine",
+  "Consumes Rocket fuel"
+);
+new Item(
+  "cannon_1",
+  "Basic Cannons",
+  ""
+);
+new Item(
+  "cannon_2",
+  "Advanced Cannons",
+  ""
 );

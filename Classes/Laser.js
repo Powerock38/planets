@@ -1,12 +1,12 @@
 class Laser {
-  constructor(x, y, angle, ownerId, spdX, spdY) {
+  constructor(x, y, angle, ownerId, spdX, spdY, speed, durability, damage) {
     this.x = x;
     this.y = y;
     this.angle = angle;
     this.ownerId = ownerId;
-    this.speed = 50;
-    this.hp = 100;
-    this.damage = 10;
+    this.speed = speed;
+    this.hp = durability;
+    this.damage = damage;
 
     this.id = uuid("lsr");
     this.spdX = Math.cos(this.angle) * this.speed + spdX;
@@ -27,13 +27,12 @@ class Laser {
     for(let i in shiplist) {
       let target = shiplist[i];
 
-      if(getDistance(target, this) < 30 && this.ownerId !== target.id) {
+      if(getDistance(target, this) < 30 && target.id !== this.ownerId) {
         this.hit(target);
         this.toRemove = true;
       }
     }
   }
-
 
   hit(target) {
     if(target.shieldHP <= 0) {

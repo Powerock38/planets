@@ -1,6 +1,7 @@
-const Inventory = require("./Inventory.js");
+const Inventory = require("./Inventory.js").Inventory;
 const System = require("./System.js");
 const Laser = require("./Laser.js");
+const StatItem = require("./Inventory.js").StatItem;
 
 class Ship {
   constructor(id, x, y) {
@@ -11,62 +12,73 @@ class Ship {
     this.y = y;
     this.angle = 0;
 
-    this.hpMax = 100;
-    this.hp = this.hpMax;
-
-    this.shieldMaxHP = 50;
-    this.shieldHP = this.shieldMaxHP;
-    this.shieldPower = 0.2;
-
     this.turnLeft = false;
     this.turnRight = false;
     this.speedUp = false;
     this.speedDown = false;
-
     this.mining = false;
-    this.canMine = true;
-    this.miningRate = 1;
-    this.miningRange = 10;
-
     this.attack = false;
+
+    this.canMine = true;
     this.fireReady = true;
-    this.fireRate = 5;
 
     this.spdX = 0;
     this.spdY = 0;
-    this.maxSpeed = 20;
     this.rotationRate = 0;
+    this.maxSpeed = 20;
     this.maxRotationRate = 0.5;
-    this.thrust = 0.5;
 
     this.cargo = new Inventory([
       {id:"fuel", amount: 999999999},
-    ], this.id);
+      {id:"mining_drill_1", amount: 1},
+      {id:"mining_arm_1", amount: 1},
+      {id:"armouring_1", amount: 1},
+      {id:"shield_1", amount: 1},
+      {id:"thrusters_main_1", amount: 1},
+      {id:"thrusters_side_1", amount: 1},
+      {id:"engine_1", amount: 1},
+      {id:"cannon_1", amount: 1},
+    ], this);
+
+    this.updateStats();
+
+    this.hp = this.hpMax;
+    this.shieldHP = this.shieldMaxHP;
 
     Ship.list[this.id] = this;
     initPack.ship.push(this.getInitPack());
+  }
+
+  updateStats() {
+    for(let i in StatItem.list) {
+      if(this.cargo.hasItem(i, 1)) {
+        for(let stat in StatItem.list[i].stats) {
+          this[stat] = StatItem.list[i].stats[stat];
+        }
+      }
+    }
   }
 
   updateSpeed() {
     let thrustX = this.thrust * Math.cos(this.angle);
     let thrustY = this.thrust * Math.sin(this.angle);
 
-    if (this.speedUp && this.cargo.hasItem("fuel",1)) {
-      this.cargo.removeItem("fuel",1);
+    if (this.speedUp && this.cargo.hasItem(this.fuel,1)) {
+      this.cargo.removeItem(this.fuel,1);
       this.spdX += thrustX;
       this.spdY += thrustY;
     }
-    if (this.speedDown && this.cargo.hasItem("fuel",1)) {
-      this.cargo.removeItem("fuel",1);
+    if (this.speedDown && this.cargo.hasItem(this.fuel,1)) {
+      this.cargo.removeItem(this.fuel,1);
       this.spdX -= thrustX;
       this.spdY -= thrustY;
     }
 
     if (this.turnRight && this.rotationRate < this.maxRotationRate) {
-      this.rotationRate += 0.005;
+      this.rotationRate += this.turningThrust;
     }
     if (this.turnLeft && this.rotationRate > -this.maxRotationRate) {
-      this.rotationRate -= 0.005;
+      this.rotationRate -= this.turningThrust;
     }
 
     this.angle += this.rotationRate;
@@ -144,7 +156,10 @@ class Ship {
       this.angle,
       this.id,
       this.spdX,
-      this.spdY
+      this.spdY,
+      this.laserSpeed,
+      this.laserDurability,
+      this.laserDamage
     );
   }
 

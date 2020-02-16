@@ -17,7 +17,7 @@ class Craft {
   }
 
   craft(inv) {
-    if(!canCraft(inv))
+    if(!this.canCraft(inv))
       return;
 
     for(let i in this.itemsIn) {
@@ -31,13 +31,12 @@ class Craft {
 }
 Craft.list = {};
 
-
-new Craft("name",
+new Craft("cannon_2",
   [   // itemsIn
-    {id:"item1",amount:13},
-    {id:"item2",amount:21},
+    {id:"cannon_1",amount:1},
+    {id:"copper",amount:20},
   ],[ // itemsOut
-    {id:"item3",amount:3},
+    {id:"cannon_2",amount:1},
   ]
 );
 

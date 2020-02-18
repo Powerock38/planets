@@ -67,7 +67,6 @@ class Laser {
       id: this.id,
       x: this.x,
       y: this.y,
-      angle: this.angle,
     }
   }
 

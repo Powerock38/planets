@@ -25,7 +25,6 @@ function serval(str) {
 
 
 var selfId = null;
-var inventory;
 
 //listener
 connection.onmessage = (message)=>{
@@ -45,13 +44,13 @@ connection.onmessage = (message)=>{
     // first init
     if(data.selfId !== undefined) {
       selfId = data.selfId;
-      inventory = new Inventory(data.inventory);
+      Item.refresh(data.items);
     }
+
   } else if(msg.h === 'update') {
     for(let i in data.ship) {
       let pack = data.ship[i];
       let ship = Ship.list[pack.id];
-
       if(ship) {
         for(let o in pack) {
           if(pack.hasOwnProperty(o) && pack[o] !== undefined && o !== "id") {
@@ -64,7 +63,6 @@ connection.onmessage = (message)=>{
     for(let i in data.system) {
       let pack = data.system[i];
       let system = System.list[pack.id];
-
       if(system) {
         for(let o in pack.planetList) {
           system.planetList[o].ores = pack.planetList[o].ores;
@@ -75,7 +73,6 @@ connection.onmessage = (message)=>{
     for(let i in data.laser) {
       let pack = data.laser[i];
       let laser = Laser.list[pack.id];
-
       if(laser) {
         for(let o in pack) {
           if(pack.hasOwnProperty(o) && pack[o] !== undefined && o !== "id") {
@@ -85,15 +82,9 @@ connection.onmessage = (message)=>{
       }
     }
   } else if(msg.h === 'updateInventory') {
-    if(inventory) {
-      inventory.items = data.items;
-      inventory.refresh();
-    }
+    Item.refresh(data.items);
 
-    Craft.list = {};
-    for(let i in data.crafts)
-      new Craft(data.crafts[i]);
-    Craft.refresh();
+    Craft.refresh(data.crafts);
 
   } else if(msg.h === 'remove') {
     for(let i in data.ship) {
@@ -142,6 +133,16 @@ document.addEventListener("wheel", e => {
   }
 });
 
+//sprites
+var IMAGES = {
+  ship: "ship",
+};
+
+for (let i in IMAGES) {
+  let path = "client/images/"+IMAGES[i]+".svg";
+  IMAGES[i] = new Image();
+  IMAGES[i].src = path;
+}
 
 var ctrX = 0;
 var ctrY = 0;

@@ -27,12 +27,14 @@ class Craft {
     return str.substring(0, str.length - 3);
   }
 
-  static refresh() {
-    let ul = document.createElement("ul");
+  static refresh(crafts) {
+    Craft.list = {};
+    for(let i in crafts)
+      new Craft(crafts[i]);
 
-    for(let i in Craft.list) {
+    let ul = document.createElement("ul");
+    for(let i in Craft.list)
       ul.appendChild(Craft.list[i].refresh());
-    }
 
     document.getElementById("craftlist").innerHTML = "";
     document.getElementById("craftlist").appendChild(ul);

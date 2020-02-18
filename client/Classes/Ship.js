@@ -29,7 +29,7 @@ class Ship {
         let length = rnd(10, 20);
         ctx.strokeStyle = rndChoose(flameColors);
         ctx.beginPath();
-        let orig_x = this.x - 5;
+        let orig_x = this.x - 20;
         let orig_y = this.y;
         ctx.moveTo(orig_x, orig_y);
         ctx.lineTo(Math.round(orig_x - Math.cos(angle) * length), Math.round(orig_y + Math.sin(angle) * length));
@@ -43,11 +43,11 @@ class Ship {
         let length = rnd(5, 10);
         ctx.strokeStyle = rndChoose(flameColors);
         ctx.beginPath();
-        let orig_x = this.x + 15;
-        let orig_y = this.y - 4;
+        let orig_x = this.x + 6;
+        let orig_y = this.y - 8;
         ctx.moveTo(orig_x, orig_y);
         ctx.lineTo(Math.round(orig_x + Math.cos(angle) * length), Math.round(orig_y + Math.sin(angle) * length));
-        orig_y = this.y + 4;
+        orig_y = this.y + 8;
         ctx.moveTo(orig_x, orig_y);
         ctx.lineTo(Math.round(orig_x + Math.cos(angle) * length), Math.round(orig_y + Math.sin(angle) * length));
         ctx.stroke();
@@ -61,8 +61,8 @@ class Ship {
         let length = rnd(3, 7);
         ctx.strokeStyle = rndChoose(flameColors);
         ctx.beginPath();
-        let orig_x = this.x;
-        let orig_y = this.y + 5;
+        let orig_x = this.x + 2;
+        let orig_y = this.y + 10;
         ctx.moveTo(orig_x, orig_y);
         ctx.lineTo(Math.round(orig_x + Math.cos(angle) * length), Math.round(orig_y + Math.sin(angle) * length));
         ctx.closePath();
@@ -76,8 +76,8 @@ class Ship {
         let length = rnd(3, 7);
         ctx.strokeStyle = rndChoose(flameColors);
         ctx.beginPath();
-        let orig_x = this.x;
-        let orig_y = this.y - 5;
+        let orig_x = this.x + 2;
+        let orig_y = this.y - 10;
         ctx.moveTo(orig_x, orig_y);
         ctx.lineTo(Math.round(orig_x + Math.cos(angle) * length), Math.round(orig_y + Math.sin(angle) * length));
         ctx.closePath();
@@ -86,23 +86,26 @@ class Ship {
     }
 
     //ship
-    ctx.fillStyle = "white";
-    ctx.beginPath();
-    ctx.moveTo(this.x + 30, this.y);
-    ctx.lineTo(this.x - 10, this.y - 10);
-    ctx.lineTo(this.x - 10, this.y + 10);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    //ship's red nose
-    ctx.fillStyle = "red";
-    ctx.beginPath();
-    ctx.moveTo(this.x, this.y);
-    ctx.lineTo(this.x + 5, this.y - 2.5);
-    ctx.lineTo(this.x + 5, this.y + 2.5);
-    ctx.closePath();
-    ctx.fill();
+    let imgWidth = 80;
+    let imgHeight = 60;
+    ctx.drawImage(IMAGES.ship, this.x - imgWidth/2, this.y - imgHeight/2, imgWidth, imgHeight);
+    // ctx.fillStyle = "white";
+    // ctx.beginPath();
+    // ctx.moveTo(this.x + 30, this.y);
+    // ctx.lineTo(this.x - 10, this.y - 10);
+    // ctx.lineTo(this.x - 10, this.y + 10);
+    // ctx.closePath();
+    // ctx.fill();
+    // ctx.stroke();
+    //
+    // //ship's red nose
+    // ctx.fillStyle = "red";
+    // ctx.beginPath();
+    // ctx.moveTo(this.x, this.y);
+    // ctx.lineTo(this.x + 5, this.y - 2.5);
+    // ctx.lineTo(this.x + 5, this.y + 2.5);
+    // ctx.closePath();
+    // ctx.fill();
 
     ctx.restore();
   }

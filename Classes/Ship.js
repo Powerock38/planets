@@ -151,8 +151,19 @@ class Ship {
 
   shoot() {
     new Laser(
-      this.x,
-      this.y,
+      this.x + Math.cos(this.angle + Math.PI/2) * 25,
+      this.y + Math.sin(this.angle + Math.PI/2) * 25,
+      this.angle,
+      this.id,
+      this.spdX,
+      this.spdY,
+      this.laserSpeed,
+      this.laserDurability,
+      this.laserDamage
+    );
+    new Laser(
+      this.x + Math.cos(this.angle - Math.PI/2) * 25,
+      this.y + Math.sin(this.angle - Math.PI/2) * 25,
       this.angle,
       this.id,
       this.spdX,
@@ -225,7 +236,7 @@ class Ship {
     ws.send(JSON.stringify({h: 'init',
       data: {
         selfId: ws.id,
-        inventory: player.cargo.items,
+        items: player.cargo.items,
         ship: Ship.getAllInitPack(),
         system: System.getAllInitPack()
       }

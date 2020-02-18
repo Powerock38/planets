@@ -1,30 +1,30 @@
-class Inventory {
-  constructor(items) {
-    this.items = items;
-    this.refresh();
-  }
-
-  refresh() {
-    let str = "<ul>";
-    for(let i in this.items) {
-      let item = Item.list[this.items[i].id];
-      if(item)
-        str += "<li>" + item.name + " (" + this.items[i].amount + ") </li>";
-    }
-    document.getElementById("inventory").innerHTML = str + "</ul>";
-  }
-}
-
 class Item {
   constructor(id,name,desc,param) {
     this.id = id;
     this.name = name;
     this.desc = desc;
+    this.amount = 0;
 
     for (let i in param)
       if (param[i] !== undefined)
         this[i] = param[i];
     Item.list[this.id] = this;
+  }
+
+  static refresh(items) {
+    for(let i in Item.list)
+      Item.list[i].amount = 0;
+    for(let i in items)
+      Item.list[items[i].id].amount = items[i].amount;
+
+    //display
+    let str = "<ul>";
+    for(let i in Item.list) {
+      let item = Item.list[i];
+      if(item.amount > 0)
+        str += "<li>" + item.name + " (" + item.amount + ") </li>";
+    }
+    document.getElementById("inventory").innerHTML = str + "</ul>";
   }
 }
 Item.list = {};

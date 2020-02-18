@@ -12,13 +12,12 @@ NodeJS + HTML multiplayer game featuring randomly generated planets and spaceshi
 ## TODO:
 * Multiple speeds
 * Max speed
-* Better looking ship
 * Factions
 * Black hole
 * Structures
   * Station (makes Science points)
   * Quarry
-  * Fast-transport systems
+  * Fast-transport system
     * Hyperline : fast acceleration towards a specific direction
     * Wormholes ?
   * Death Stars
@@ -26,11 +25,11 @@ NodeJS + HTML multiplayer game featuring randomly generated planets and spaceshi
   * Planet harvester
   * Black hole harvester
 * Upgrades: Craft (old part + resources) = (new part)
+  * Cargo size
   * Ship health points
   * Shield (power / HP)
   * Mining range (arm)
   * Mining speed (drill)
-  * Cargo size
   * Thrusters power
   * Maneuvering thrusters power
   * Engine -> changes fuel type

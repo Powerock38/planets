@@ -5,6 +5,7 @@ class Inventory {
     this.items = items;
     this.owner = owner;
 
+    //listen for crafting requests
     SOCKET_LIST[this.owner.id].on('message', (msg)=>{
       msg = JSON.parse(msg);
       let data = msg.data;
@@ -55,7 +56,7 @@ class Inventory {
     }
   }
 
-  update() {
+  update() { // send items and possible crafts to Inventory owner
     this.owner.updateStats();
 
     let crafts = [];
@@ -110,7 +111,7 @@ new StatItem("engine_1",{
 });
 new StatItem("cannon_1",{
   fireRate: 5,
-  laserSpeed: 50,
+  laserSpeed: 40,
   laserDurability: 100,
   laserDamage: 10,
 });

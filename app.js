@@ -24,14 +24,15 @@ uuid = (prefix)=>{
 SOCKET_LIST = {};
 DEBUG = true;
 
-initPack = {ship:[],system:[],laser:[]};
-removePack = {ship:[],laser:[]};
+initPack = {ship:[], system:[], laser:[], structure:[]};
+removePack = {ship:[], laser:[]};
 
 require("./client/common.js");
 const Craft = require("./Classes/Craft.js");
 const Ship = require("./Classes/Ship.js");
 const Laser = require("./Classes/Laser.js");
 const System = require("./Classes/System.js");
+const Structure = require("./Classes/Structure.js");
 
 function generateUniverse() {
   for (var i = 0; i < 10; i++) {
@@ -45,6 +46,8 @@ function generateUniverse() {
   let spawnSys = rndChoose(System.list);
   SPAWNx = spawnSys.x + spawnSys.starRadius;
   SPAWNy = spawnSys.y + spawnSys.starRadius;
+
+  new Structure(SPAWNx, SPAWNy, "station");
 }
 
 wss.on('connection', (ws)=>{
@@ -52,37 +55,67 @@ wss.on('connection', (ws)=>{
   SOCKET_LIST[ws.id] = ws;
   console.log('socket connection ' + ws.id);
 
+  //custom functions
+  ws.ssend = (header, data) => {
+    let pack = {h: header, data: data};
+    try {
+      let jsonPack = JSON.stringify(pack);
+      ws.send(jsonPack);
+    }
+    catch(err) {
+      console.error(err);
+    }
+  }
+  ws.onmsg = (header, callback) => {
+    ws.on('message', (jsonPack)=>{
+      try {
+        let pack = JSON.parse(jsonPack);
+        if(pack.h === header) {
+          callback(pack.data);
+        }
+      }
+      catch(err) {
+        console.error(err);
+      }
+    });
+  }
+
   Ship.onConnect(ws);
 
   ws.on('close',(e)=>{
     delete SOCKET_LIST[ws.id];
     Ship.onDisconnect(ws);
-    console.log("socket deconnection " + ws.id + "\n" + e);
+    console.log("socket deconnection " + ws.id + " (" + e + ")");
   });
 
   ws.on('error',(e)=>{
-    return console.log(e);
+    return console.error(e);
   });
 
+  //serval()
   if(DEBUG) {
-    ws.on('message',(msg)=>{
-      msg = JSON.parse(msg);
-      let data = msg.data;
-
-      if(msg.h === 'eval') {
-        try {
-          eval(data);
-        }
-        catch(error) {
-          console.log("==== SERVAL ERROR ====");
-          console.log(error);
-          console.log("======================");
-        }
+    ws.onmsg("eval",(data)=>{
+      try {
+        eval(data);
+      }
+      catch(error) {
+        console.log("==== SERVAL ERROR ====");
+        console.error(error);
+        console.log("======================");
       }
     });
   }
 });
 
+function packIsNotEmpty(pack) {
+  let empty = true;
+  for(let i in pack) {
+    if(pack[i].length > 0) {
+      empty = false;
+    }
+  }
+  return !empty;
+}
 
 setInterval(() => {
   let updatePack = {
@@ -94,21 +127,22 @@ setInterval(() => {
   for(var i in SOCKET_LIST) {
     let ws = SOCKET_LIST[i];
 
-    if(initPack.ship.length > 0 || initPack.system.length > 0 || initPack.laser.length > 0)
-      ws.send(JSON.stringify({h: 'init', data: initPack}));
+    if(packIsNotEmpty(initPack))
+      ws.ssend("init", initPack);
 
-    if(removePack.ship.length > 0 || removePack.laser.length > 0)
-      ws.send(JSON.stringify({h: 'remove', data: removePack}));
+    if(packIsNotEmpty(removePack))
+      ws.ssend("remove", removePack);
 
-    ws.send(JSON.stringify({h: 'update', data: updatePack}));
+    ws.ssend("update", updatePack);
   }
 
-  initPack.ship = [];
-  initPack.system = [];
-  initPack.laser = [];
+  for(let i in initPack) {
+    initPack[i] = [];
+  }
 
-  removePack.ship = [];
-  removePack.laser = [];
+  for(let i in removePack) {
+    removePack[i] = [];
+  }
 }, 1000 / 30);
 
 generateUniverse();

@@ -6,12 +6,8 @@ class Inventory {
     this.owner = owner;
 
     //listen for crafting requests
-    SOCKET_LIST[this.owner.id].on('message', (msg)=>{
-      msg = JSON.parse(msg);
-      let data = msg.data;
-
-      if(msg.h === 'craft')
-        Craft.list[data.craftId].craft(this);
+    SOCKET_LIST[this.owner.id].onmsg("craft", (data)=>{
+      Craft.list[data.craftId].craft(this);
     });
   }
 
@@ -66,10 +62,10 @@ class Inventory {
         crafts.push(craft);
     }
 
-    SOCKET_LIST[this.owner.id].send(JSON.stringify({h: 'updateInventory', data: {
+    SOCKET_LIST[this.owner.id].ssend("updateInventory", {
       items: this.items,
-      crafts: crafts,
-    }}));
+      crafts: crafts
+    });
   }
 }
 
@@ -88,10 +84,10 @@ class StatItem {
 StatItem.list = {};
 
 new StatItem("mining_drill_1",{
-  miningRate: 1,
+  miningRate: 100,
 });
 new StatItem("mining_arm_1",{
-  miningRange: 10,
+  miningRange: 100,
 });
 new StatItem("armouring_1",{
   hpMax: 100,

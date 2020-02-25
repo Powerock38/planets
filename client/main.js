@@ -41,6 +41,9 @@ connection.onmessage = (message)=>{
     for(let i in data.laser)
       new Laser(data.laser[i]);
 
+    for(let i in data.structure)
+      new Structure(data.structure[i]);
+
     // first init
     if(data.selfId !== undefined) {
       selfId = data.selfId;
@@ -136,6 +139,7 @@ document.addEventListener("wheel", e => {
 //sprites
 var IMAGES = {
   ship: "ship",
+  station: "station",
 };
 
 for (let i in IMAGES) {
@@ -183,6 +187,12 @@ function drawUniverseLoop() {
           }
         }
       }
+    }
+
+    for (let i in Structure.list) {
+      let structure = Structure.list[i];
+      if(isInSight(structure.x, structure.y, structure.radius))
+        structure.draw();
     }
 
     for (let i in Laser.list) {

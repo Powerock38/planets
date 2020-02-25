@@ -2,6 +2,7 @@ const Inventory = require("./Inventory.js").Inventory;
 const System = require("./System.js");
 const Laser = require("./Laser.js");
 const StatItem = require("./Inventory.js").StatItem;
+const Structure = require("./Structure.js");
 
 class Ship {
   constructor(id, x, y) {
@@ -21,6 +22,8 @@ class Ship {
 
     this.canMine = true;
     this.fireReady = true;
+
+    this.canCraft = false;
 
     this.spdX = 0;
     this.spdY = 0;
@@ -88,16 +91,25 @@ class Ship {
   }
 
   updateCollisions() {
+    this.canCraft = false;
+    for (let i in Structure.list) {
+      let structure = Structure.list[i];
+      let structureDistance = getDistance(this, structure);
+      if (structureDistance <= structure.radius && structure.type == "station") {
+        this.canCraft = true;
+      }
+    }
+
     for (let i in System.list) {
       let system = System.list[i];
-      let systemDistance = getDistance({x: this.x, y: this.y},{x: system.x, y: system.y});
+      let systemDistance = getDistance(this, system);
 
       // if in system range
       if (systemDistance <= system.radius) {
         //planet collision
         for (let j in system.planetList) {
           let planet = system.planetList[j];
-          let planetDistance = getDistance({x: this.x, y: this.y},{x: planet.x, y: planet.y});
+          let planetDistance = getDistance(this, planet);
 
           if (planetDistance < planet.radius) {
             this.spdX *= planet.friction;
@@ -108,7 +120,7 @@ class Ship {
             if(this.mining && this.canMine) {
               for (let k in planet.ores) {
                 let ore = planet.ores[k];
-                let oreDistance = getDistance({x: this.x, y: this.y},{x: planet.x + ore.x, y: planet.y + ore.y});
+                let oreDistance = getDistance(this, {x: planet.x + ore.x, y: planet.y + ore.y});
 
                 if(oreDistance < ore.amount + this.miningRange) {
                   ore.mine(this.cargo, 1);
@@ -212,35 +224,30 @@ class Ship {
       SPAWNy
     );
 
-    ws.on('message', (msg)=>{
-      msg = JSON.parse(msg);
-      let data = msg.data;
-
-      if(msg.h === 'keyPress') {
-        if(data.inputId === 'right')
-          player.turnRight = data.state;
-        else if(data.inputId === 'left')
-          player.turnLeft = data.state;
-        else if(data.inputId === 'up')
-          player.speedUp = data.state;
-        else if(data.inputId === 'down')
-          player.speedDown = data.state;
-        else if(data.inputId === 'mine')
-          player.mining = data.state;
-        else if(data.inputId === 'shoot')
-          player.attack = data.state;
-      }
+    ws.onmsg("keyPress", (data)=>{
+      if(data.inputId === 'right')
+        player.turnRight = data.state;
+      else if(data.inputId === 'left')
+        player.turnLeft = data.state;
+      else if(data.inputId === 'up')
+        player.speedUp = data.state;
+      else if(data.inputId === 'down')
+        player.speedDown = data.state;
+      else if(data.inputId === 'mine')
+        player.mining = data.state;
+      else if(data.inputId === 'shoot')
+        player.attack = data.state;
     });
 
     //send the current gamestate to the newly logged user
-    ws.send(JSON.stringify({h: 'init',
-      data: {
-        selfId: ws.id,
-        items: player.cargo.items,
-        ship: Ship.getAllInitPack(),
-        system: System.getAllInitPack()
-      }
-    }));
+    ws.ssend("init", {
+      selfId: ws.id,
+      items: player.cargo.items,
+      ship: Ship.getAllInitPack(),
+      system: System.getAllInitPack(),
+      laser: Laser.getAllInitPack(),
+      structure: Structure.getAllInitPack()
+    });
   }
 
   static onDisconnect(socket) {

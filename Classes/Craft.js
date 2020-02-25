@@ -17,7 +17,7 @@ class Craft {
   }
 
   craft(inv) {
-    if(!this.canCraft(inv))
+    if(!this.canCraft(inv) || !inv.owner.canCraft)
       return;
 
     for(let i in this.itemsIn) {

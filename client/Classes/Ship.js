@@ -89,23 +89,6 @@ class Ship {
     let imgWidth = 80;
     let imgHeight = 60;
     ctx.drawImage(IMAGES.ship, this.x - imgWidth/2, this.y - imgHeight/2, imgWidth, imgHeight);
-    // ctx.fillStyle = "white";
-    // ctx.beginPath();
-    // ctx.moveTo(this.x + 30, this.y);
-    // ctx.lineTo(this.x - 10, this.y - 10);
-    // ctx.lineTo(this.x - 10, this.y + 10);
-    // ctx.closePath();
-    // ctx.fill();
-    // ctx.stroke();
-    //
-    // //ship's red nose
-    // ctx.fillStyle = "red";
-    // ctx.beginPath();
-    // ctx.moveTo(this.x, this.y);
-    // ctx.lineTo(this.x + 5, this.y - 2.5);
-    // ctx.lineTo(this.x + 5, this.y + 2.5);
-    // ctx.closePath();
-    // ctx.fill();
 
     ctx.restore();
   }

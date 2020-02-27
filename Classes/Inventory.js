@@ -84,10 +84,10 @@ class StatItem {
 StatItem.list = {};
 
 new StatItem("mining_drill_1",{
-  miningRate: 100,
+  miningRate: 1,
 });
 new StatItem("mining_arm_1",{
-  miningRange: 100,
+  miningRange: 10,
 });
 new StatItem("armouring_1",{
   hpMax: 100,
@@ -104,6 +104,9 @@ new StatItem("thrusters_side_1",{
 });
 new StatItem("engine_1",{
   fuel: "fuel",
+});
+new StatItem("tank_1",{
+  fuelMax: 100000,
 });
 new StatItem("cannon_1",{
   fireRate: 5,

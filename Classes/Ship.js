@@ -32,7 +32,6 @@ class Ship {
     this.maxRotationRate = 0.5;
 
     this.cargo = new Inventory([
-      {id:"fuel", amount: 999999999},
       {id:"mining_drill_1", amount: 1},
       {id:"mining_arm_1", amount: 1},
       {id:"armouring_1", amount: 1},
@@ -40,10 +39,16 @@ class Ship {
       {id:"thrusters_main_1", amount: 1},
       {id:"thrusters_side_1", amount: 1},
       {id:"engine_1", amount: 1},
+      {id:"tank_1", amount: 1},
       {id:"cannon_1", amount: 1},
     ], this);
 
     this.updateStats();
+
+    this.cargo.items.push({
+      id: this.fuel,
+      amount: this.fuelMax
+    });
 
     this.hp = this.hpMax;
     this.shieldHP = this.shieldMaxHP;
@@ -187,17 +192,9 @@ class Ship {
   }
 
   getInitPack() {
-    return {
-      id: this.id,
-      x: this.x,
-      y: this.y,
-      angle: this.angle,
+    return Object.assign({
       name: this.name,
-      turnLeft: this.turnLeft,
-      turnRight: this.turnRight,
-      speedUp: this.speedUp,
-      speedDown: this.speedDown
-    }
+    }, this.getUpdatePack());
   }
 
   getUpdatePack() {
@@ -205,6 +202,14 @@ class Ship {
       id: this.id,
       x: this.x,
       y: this.y,
+
+      hp: this.hp,
+      hpMax: this.hpMax,
+      shieldHP: this.shieldHP,
+      shieldMaxHP: this.shieldMaxHP,
+      fuel: this.fuel,
+      fuelMax: this.fuelMax,
+
       angle: this.angle,
       turnLeft: this.turnLeft,
       turnRight: this.turnRight,

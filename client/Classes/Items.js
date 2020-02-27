@@ -126,6 +126,11 @@ new Item(
   "Consumes Rocket fuel"
 );
 new Item(
+  "tank_1",
+  "Basic Fuel Tank",
+  "Stores Rocket fuel"
+);
+new Item(
   "cannon_1",
   "Basic Cannons",
   ""

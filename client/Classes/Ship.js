@@ -1,16 +1,21 @@
 class Ship {
   constructor(initPack) {
-    this.name = initPack.name;
-    this.id = initPack.id;
+    // this.name = initPack.name;
+    // this.id = initPack.id;
+    //
+    // this.x = initPack.x;
+    // this.y = initPack.y;
+    // this.angle = initPack.angle;
+    //
+    // this.turnLeft = initPack.turnLeft;
+    // this.turnRight = initPack.turnRight;
+    // this.speedUp = initPack.speedUp;
+    // this.speedDown = initPack.speedDown;
 
-    this.x = initPack.x;
-    this.y = initPack.y;
-    this.angle = initPack.angle;
-
-    this.turnLeft = initPack.turnLeft;
-    this.turnRight = initPack.turnRight;
-    this.speedUp = initPack.speedUp;
-    this.speedDown = initPack.speedDown;
+    for(let i in initPack) {
+      if(initPack[i] !== undefined)
+        this[i] = initPack[i];
+    }
 
     Ship.list[this.id] = this;
   }
@@ -24,7 +29,7 @@ class Ship {
     //swaggy flames
     let flameColors = ["#FED7A4", "#F7AB57", "#F58021", "#F05D24", "#F26825"]
     if (this.speedUp) {
-      for (var i = 0; i < 20; i++) {
+      for (let i = 0; i < 20; i++) {
         let angle = rnd(-20, 20) * (Math.PI / 180);
         let length = rnd(10, 20);
         ctx.strokeStyle = rndChoose(flameColors);
@@ -38,7 +43,7 @@ class Ship {
       }
     }
     if (this.speedDown) {
-      for (var i = 0; i < 10; i++) {
+      for (let i = 0; i < 10; i++) {
         let angle = rnd(-10, 10) * (Math.PI / 180);
         let length = rnd(5, 10);
         ctx.strokeStyle = rndChoose(flameColors);
@@ -55,7 +60,7 @@ class Ship {
     }
 
     if (this.turnLeft) {
-      for (var i = 0; i < 10; i++) {
+      for (let i = 0; i < 10; i++) {
         let angle = rnd(-10, 10) * (Math.PI / 180);
         angle += Math.PI / 2;
         let length = rnd(3, 7);
@@ -70,7 +75,7 @@ class Ship {
       }
     }
     if (this.turnRight) {
-      for (var i = 0; i < 10; i++) {
+      for (let i = 0; i < 10; i++) {
         let angle = rnd(-10, 10) * (Math.PI / 180);
         angle -= Math.PI / 2;
         let length = rnd(3, 7);

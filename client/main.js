@@ -3,6 +3,13 @@ const connection = new WebSocket('ws://localhost:2000');
 const canvas = document.getElementById("mainframe");
 const ctx = canvas.getContext("2d");
 
+const hud = {
+  name: document.getElementById("name"),
+  fuel: document.getElementById("fuel"),
+  shield: document.getElementById("shield"),
+  hp: document.getElementById("hp"),
+}
+
 function isInSight(x,y,radius) {
   return (x + radius > ctrX &&
     x - radius < ctrX + canvas.width / Zoom &&
@@ -48,6 +55,7 @@ connection.onmessage = (message)=>{
     if(data.selfId !== undefined) {
       selfId = data.selfId;
       Item.refresh(data.items);
+      hud.name.innerHTML = Ship.list[selfId].name;
     }
 
   } else if(msg.h === 'update') {
@@ -151,7 +159,7 @@ for (let i in IMAGES) {
 var ctrX = 0;
 var ctrY = 0;
 
-function drawUniverseLoop() {
+function drawUniverse() {
   if(selfId) {
     let Player = Ship.list[selfId];
 
@@ -209,9 +217,24 @@ function drawUniverseLoop() {
 
     ctx.restore();
   }
-  // requestAnimationFrame(drawUniverseLoop);
+  // requestAnimationFrame(drawUniverse);
+}
+
+function drawHUD() {
+  if(selfId) {
+    let Player = Ship.list[selfId];
+    hud.hp.max = Player.hpMax;
+    hud.hp.value = Player.hp;
+
+    hud.shield.max = Player.shieldMaxHP;
+    hud.shield.value = Player.shieldHP;
+
+    hud.fuel.max = Player.fuelMax;
+    hud.fuel.value = Item.list[Player.fuel].amount;
+  }
 }
 
 setInterval(()=>{
-  drawUniverseLoop();
+  drawUniverse();
+  drawHUD();
 }, 1000 / 30);

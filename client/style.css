@@ -1,19 +1,45 @@
 body {
   background-color: black;
   margin: 0;
-  overflow: hidden;
+  font-family: sans-serif;
 }
 
 #mainframe {
   display: block;
 }
 
+#dashboard {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 10%;
+  background-color: rgba(34, 34, 34, 0.9);
+  color: white;
+  text-align: right;
+  padding: 20px;
+}
+
+#dashboard > progress {
+  border: none;
+}
+
+#dashboard > #hp { color: red; }
+#dashboard > #hp::-moz-progress-bar { background: red; }
+#dashboard > #hp::-webkit-progress-value { background: red; }
+
+#dashboard > #fuel { color: purple; }
+#dashboard > #fuel::-moz-progress-bar { background: purple; }
+#dashboard > #fuel::-webkit-progress-value { background: purple; }
+
+#dashboard > #shield { color: green; }
+#dashboard > #shield::-moz-progress-bar { background: green; }
+#dashboard > #shield::-webkit-progress-value { background: green; }
+
 #hud {
   position: fixed;
   top: 0;
   left: 0;
   color: white;
-  font-family: sans-serif;
 }
 
 #hud #inventory ul {

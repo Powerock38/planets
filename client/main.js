@@ -38,6 +38,7 @@ connection.onmessage = (message)=>{
   let msg = JSON.parse(message.data);
   let data = msg.data;
 
+
   if(msg.h === 'init') {
     for(let i in data.ship)
       new Ship(data.ship[i]);
@@ -48,8 +49,11 @@ connection.onmessage = (message)=>{
     for(let i in data.laser)
       new Laser(data.laser[i]);
 
-    for(let i in data.structure)
-      new Structure(data.structure[i]);
+    for(let i in data.station)
+      new Station(data.station[i]);
+
+    for(let i in data.quarry)
+      new Quarry(data.quarry[i]);
 
     // first init
     if(data.selfId !== undefined) {
@@ -116,6 +120,7 @@ var keys = [
   {key:"d",action:"right"},
   {key:"e",action:"mine"},
   {key:" ",action:"shoot"},
+  {key:"m",action:"build"},
 ];
 
 function keyboardInput(e, state) {
@@ -192,15 +197,21 @@ function drawUniverse() {
 
           if (isInSight(planet.x,planet.y,planet.radius + planet.gravity)) {
             planet.draw();
+
+            for (let i in Quarry.list) {
+              let quarry = Quarry.list[i];
+              if(isInSight(quarry.x, quarry.y, quarry.radius * 2))
+                quarry.draw();
+            }
           }
         }
       }
     }
 
-    for (let i in Structure.list) {
-      let structure = Structure.list[i];
-      if(isInSight(structure.x, structure.y, structure.radius))
-        structure.draw();
+    for (let i in Station.list) {
+      let station = Station.list[i];
+      if(isInSight(station.x, station.y, station.radius))
+        station.draw();
     }
 
     for (let i in Laser.list) {

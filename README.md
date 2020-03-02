@@ -20,6 +20,7 @@ NodeJS + HTML multiplayer game featuring randomly generated planets and spaceshi
   * Fast-transport system
     * Hyperline : fast acceleration towards a specific direction
     * Wormholes ?
+    * Hyperdrive docking ring
   * Death Stars
   * Dyson sphere
   * Planet harvester

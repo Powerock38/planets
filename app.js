@@ -24,7 +24,7 @@ uuid = (prefix)=>{
 SOCKET_LIST = {};
 DEBUG = true;
 
-initPack = {ship:[], system:[], laser:[], structure:[]};
+initPack = {ship:[], system:[], laser:[], station:[], quarry:[]};
 removePack = {ship:[], laser:[]};
 
 require("./client/common.js");
@@ -32,7 +32,8 @@ const Craft = require("./Classes/Craft.js");
 const Ship = require("./Classes/Ship.js");
 const Laser = require("./Classes/Laser.js");
 const System = require("./Classes/System.js");
-const Structure = require("./Classes/Structure.js");
+const Station = require("./Classes/Station.js");
+const Quarry = require("./Classes/Quarry.js");
 
 function generateUniverse() {
   for (var i = 0; i < 10; i++) {
@@ -47,7 +48,7 @@ function generateUniverse() {
   SPAWNx = spawnSys.x + spawnSys.starRadius;
   SPAWNy = spawnSys.y + spawnSys.starRadius;
 
-  new Structure(SPAWNx, SPAWNy, "station");
+  new Station(SPAWNx, SPAWNy, "station", 500);
 }
 
 wss.on('connection', (ws)=>{
@@ -83,8 +84,8 @@ wss.on('connection', (ws)=>{
   Ship.onConnect(ws);
 
   ws.on('close',(e)=>{
-    delete SOCKET_LIST[ws.id];
     Ship.onDisconnect(ws);
+    delete SOCKET_LIST[ws.id];
     console.log("socket deconnection " + ws.id + " (" + e + ")");
   });
 
@@ -136,13 +137,11 @@ setInterval(() => {
     ws.ssend("update", updatePack);
   }
 
-  for(let i in initPack) {
+  for(let i in initPack)
     initPack[i] = [];
-  }
 
-  for(let i in removePack) {
+  for(let i in removePack)
     removePack[i] = [];
-  }
 }, 1000 / 30);
 
 generateUniverse();

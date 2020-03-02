@@ -3,9 +3,8 @@ class Ore {
     //pick a random ore from the weighted list
     let ore = rndChoose(Ore.list);
     this.id = ore.id;
-    //random amount
     this.amount = rnd(0, Math.min(ore.max, radius - 10));
-
+    
     //generate position
     let angle = Math.random() * 2 * Math.PI;
     let rad = rnd(0, radius - this.amount);

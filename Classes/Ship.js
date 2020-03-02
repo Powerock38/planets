@@ -2,7 +2,8 @@ const Inventory = require("./Inventory.js").Inventory;
 const System = require("./System.js");
 const Laser = require("./Laser.js");
 const StatItem = require("./Inventory.js").StatItem;
-const Structure = require("./Structure.js");
+const Station = require("./Station.js");
+const Quarry = require("./Quarry.js");
 
 class Ship {
   constructor(id, x, y) {
@@ -17,8 +18,16 @@ class Ship {
     this.turnRight = false;
     this.speedUp = false;
     this.speedDown = false;
-    this.mining = false;
-    this.attack = false;
+
+    this.pressing = {
+      up: false,
+      down: false,
+      right: false,
+      left: false,
+      shoot: false,
+      mine: false,
+      build: false,
+    }
 
     this.canMine = true;
     this.fireReady = true;
@@ -71,22 +80,36 @@ class Ship {
     let thrustX = this.thrust * Math.cos(this.angle);
     let thrustY = this.thrust * Math.sin(this.angle);
 
-    if (this.speedUp && this.cargo.hasItem(this.fuel,1)) {
-      this.cargo.removeItem(this.fuel,1);
-      this.spdX += thrustX;
-      this.spdY += thrustY;
-    }
-    if (this.speedDown && this.cargo.hasItem(this.fuel,1)) {
-      this.cargo.removeItem(this.fuel,1);
-      this.spdX -= thrustX;
-      this.spdY -= thrustY;
-    }
+    if(this.cargo.hasItem(this.fuel,1)) {
+      if(this.pressing.up) {
+        this.cargo.removeItem(this.fuel,1);
+        this.spdX += thrustX;
+        this.spdY += thrustY;
+      }
+      if(this.pressing.down) {
+        this.cargo.removeItem(this.fuel,1);
+        this.spdX -= thrustX;
+        this.spdY -= thrustY;
+      }
 
-    if (this.turnRight && this.rotationRate < this.maxRotationRate) {
-      this.rotationRate += this.turningThrust;
-    }
-    if (this.turnLeft && this.rotationRate > -this.maxRotationRate) {
-      this.rotationRate -= this.turningThrust;
+      if(this.pressing.right && this.rotationRate < this.maxRotationRate) {
+        this.cargo.removeItem(this.fuel,1);
+        this.rotationRate += this.turningThrust;
+      }
+      if(this.pressing.left && this.rotationRate > -this.maxRotationRate) {
+        this.cargo.removeItem(this.fuel,1);
+        this.rotationRate -= this.turningThrust;
+      }
+
+      this.speedUp = this.pressing.up;
+      this.speedDown = this.pressing.down;
+      this.turnRight = this.pressing.right;
+      this.turnLeft = this.pressing.left;
+    } else {
+      this.speedUp = false;
+      this.speedDown = false;
+      this.turnRight = false;
+      this.turnLeft = false;
     }
 
     this.angle += this.rotationRate;
@@ -96,14 +119,15 @@ class Ship {
   }
 
   updateCollisions() {
-    this.canCraft = false;
-    for (let i in Structure.list) {
-      let structure = Structure.list[i];
-      let structureDistance = getDistance(this, structure);
-      if (structureDistance <= structure.radius && structure.type == "station") {
-        this.canCraft = true;
+    let canCraft = false;
+    for (let i in Station.list) {
+      let station = Station.list[i];
+      let stationDistance = getDistance(this, station);
+      if (stationDistance <= station.radius) {
+        canCraft = true;
       }
     }
+    this.canCraft = canCraft;
 
     for (let i in System.list) {
       let system = System.list[i];
@@ -122,17 +146,32 @@ class Ship {
             this.rotationRate *= planet.friction;
 
             //mining
-            if(this.mining && this.canMine) {
+            if((this.pressing.mine && this.canMine) || this.pressing.build) {
               for (let k in planet.ores) {
                 let ore = planet.ores[k];
                 let oreDistance = getDistance(this, {x: planet.x + ore.x, y: planet.y + ore.y});
 
                 if(oreDistance < ore.amount + this.miningRange) {
-                  ore.mine(this.cargo, 1);
-                  this.canMine = false;
-                  setTimeout(()=>{
-                    this.canMine = true;
-                  }, 1000 / this.miningRate);
+                  if(this.pressing.mine) {
+                    ore.mine(this.cargo, 1);
+                    this.canMine = false;
+                    setTimeout(()=>{
+                      this.canMine = true;
+                    }, 1000 / this.miningRate);
+                  }
+
+                  if(this.pressing.build) {
+                    this.pressing.build = false;
+
+                    let canBuildHere = true;
+                    for (let l in Quarry.list) {
+                      if(Quarry.list[l].ore === ore)
+                        canBuildHere = false;
+                    }
+
+                    if(canBuildHere)
+                      new Quarry(planet.x + ore.x, planet.y + ore.y, ore, this.cargo);
+                  }
                 }
               }
             }
@@ -151,7 +190,7 @@ class Ship {
   }
 
   updateAttack() {
-    if(this.attack && this.fireReady){
+    if(this.pressing.shoot && this.fireReady){
       this.shoot();
       this.fireReady = false;
       setTimeout(()=>{
@@ -229,19 +268,23 @@ class Ship {
       SPAWNy
     );
 
+    //get keyboard input
     ws.onmsg("keyPress", (data)=>{
       if(data.inputId === 'right')
-        player.turnRight = data.state;
+        player.pressing.right = data.state;
       else if(data.inputId === 'left')
-        player.turnLeft = data.state;
+        player.pressing.left = data.state;
       else if(data.inputId === 'up')
-        player.speedUp = data.state;
+        player.pressing.up = data.state;
       else if(data.inputId === 'down')
-        player.speedDown = data.state;
+        player.pressing.down = data.state;
       else if(data.inputId === 'mine')
-        player.mining = data.state;
+        player.pressing.mine = data.state;
       else if(data.inputId === 'shoot')
-        player.attack = data.state;
+        player.pressing.shoot = data.state;
+      else if(data.inputId === 'build')
+        if(!data.state)
+          player.pressing.build = true;
     });
 
     //send the current gamestate to the newly logged user
@@ -251,7 +294,8 @@ class Ship {
       ship: Ship.getAllInitPack(),
       system: System.getAllInitPack(),
       laser: Laser.getAllInitPack(),
-      structure: Structure.getAllInitPack()
+      station: Station.getAllInitPack(),
+      quarry: Quarry.getAllInitPack(),
     });
   }
 

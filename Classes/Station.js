@@ -4,7 +4,6 @@ class Station {
     this.x = x;
     this.y = y;
     this.radius = 500;
-    this.rotation = 0.005;
 
     Station.list[this.id] = this;
     initPack.station.push(this.getInitPack());
@@ -15,7 +14,6 @@ class Station {
       id: this.id,
       x: this.x,
       y: this.y,
-      rotation: this.rotation,
       radius: this.radius
     }
   }

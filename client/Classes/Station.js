@@ -1,11 +1,11 @@
 class Station {
   constructor(initPack) {
-    this.id = initPack.id;
-    this.x = initPack.x;
-    this.y = initPack.y;
-    this.rotation = initPack.rotation;
-    this.radius = initPack.radius;
+    for(let i in initPack) {
+      if(initPack[i] !== undefined)
+        this[i] = initPack[i];
+    }
 
+    this.rotation = 0.005;
     this.angle = 0;
 
     Station.list[this.id] = this;

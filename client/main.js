@@ -153,6 +153,7 @@ document.addEventListener("wheel", e => {
 var IMAGES = {
   ship: "ship",
   station: "station",
+  quarry: "quarry",
 };
 
 for (let i in IMAGES) {

@@ -1,9 +1,9 @@
 class Laser {
   constructor(initPack) {
-    this.id = initPack.id;
-    this.x = initPack.x;
-    this.y = initPack.y;
-    this.angle = initPack.angle;
+    for(let i in initPack) {
+      if(initPack[i] !== undefined)
+        this[i] = initPack[i];
+    }
 
     Laser.list[this.id] = this;
   }

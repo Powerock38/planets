@@ -1,17 +1,5 @@
 class Ship {
   constructor(initPack) {
-    // this.name = initPack.name;
-    // this.id = initPack.id;
-    //
-    // this.x = initPack.x;
-    // this.y = initPack.y;
-    // this.angle = initPack.angle;
-    //
-    // this.turnLeft = initPack.turnLeft;
-    // this.turnRight = initPack.turnRight;
-    // this.speedUp = initPack.speedUp;
-    // this.speedDown = initPack.speedDown;
-
     for(let i in initPack) {
       if(initPack[i] !== undefined)
         this[i] = initPack[i];

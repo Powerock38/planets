@@ -1,5 +1,5 @@
 class Laser {
-  constructor(x, y, angle, ownerId, spdX, spdY, speed, durability, damage) {
+  constructor(x, y, angle, ownerId, spdX, spdY, speed, durability, damage, width, length) {
     this.x = x;
     this.y = y;
     this.angle = angle;
@@ -7,6 +7,9 @@ class Laser {
     this.speed = speed;
     this.hp = durability;
     this.damage = damage;
+
+    this.width = width || 3;
+    this.length = length || 20;
 
     this.id = uuid("lsr");
     this.spdX = Math.cos(this.angle) * this.speed + spdX;
@@ -54,12 +57,11 @@ class Laser {
   }
 
   getInitPack() {
-    return {
-      id: this.id,
-      x: this.x,
-      y: this.y,
+    return Object.assign({
       angle: this.angle,
-    }
+      width: this.width,
+      length: this.length,
+    }, this.getUpdatePack());
   }
 
   getUpdatePack() {

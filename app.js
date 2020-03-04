@@ -24,7 +24,7 @@ uuid = (prefix)=>{
 SOCKET_LIST = {};
 DEBUG = true;
 
-initPack = {ship:[], system:[], laser:[], station:[], quarry:[]};
+initPack = {ship:[], system:[], laser:[], station:[], quarry:[], sentry:[]};
 removePack = {ship:[], laser:[]};
 
 require("./client/common.js");
@@ -34,6 +34,7 @@ const Laser = require("./Classes/Laser.js");
 const System = require("./Classes/System.js");
 const Station = require("./Classes/Station.js");
 const Quarry = require("./Classes/Quarry.js");
+const Sentry = require("./Classes/Sentry.js");
 
 function generateUniverse() {
   for (var i = 0; i < 10; i++) {
@@ -123,6 +124,7 @@ setInterval(() => {
     ship: Ship.update(),
     system: System.update(),
     laser: Laser.update(),
+    sentry: Sentry.update(),
   };
 
   for(var i in SOCKET_LIST) {

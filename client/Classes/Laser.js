@@ -16,8 +16,8 @@ class Laser {
 
     ctx.beginPath();
     ctx.moveTo(this.x, this.y);
-    ctx.lineTo(this.x - 20, this.y);
-    ctx.lineWidth = 3;
+    ctx.lineTo(this.x - this.length, this.y);
+    ctx.lineWidth = this.width;
     ctx.strokeStyle = "red";
     ctx.stroke();
     ctx.lineWidth = 1;

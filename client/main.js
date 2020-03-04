@@ -55,6 +55,9 @@ connection.onmessage = (message)=>{
     for(let i in data.quarry)
       new Quarry(data.quarry[i]);
 
+    for(let i in data.sentry)
+      new Sentry(data.sentry[i]);
+
     // first init
     if(data.selfId !== undefined) {
       selfId = data.selfId;
@@ -81,6 +84,18 @@ connection.onmessage = (message)=>{
       if(system) {
         for(let o in pack.planetList) {
           system.planetList[o].ores = pack.planetList[o].ores;
+        }
+      }
+    }
+
+    for(let i in data.sentry) {
+      let pack = data.sentry[i];
+      let sentry = Sentry.list[pack.id];
+      if(sentry) {
+        for(let o in pack) {
+          if(pack.hasOwnProperty(o) && pack[o] !== undefined && o !== "id") {
+            sentry[o] = pack[o];
+          }
         }
       }
     }
@@ -114,20 +129,21 @@ connection.onmessage = (message)=>{
 
 //keyboard
 var keys = [
-  {key:"z",action:"up"},
-  {key:"s",action:"down"},
-  {key:"q",action:"left"},
-  {key:"d",action:"right"},
-  {key:"e",action:"mine"},
-  {key:" ",action:"shoot"},
-  {key:"m",action:"build"},
+  {key:"z", action:"up"},
+  {key:"s", action:"down"},
+  {key:"q", action:"left"},
+  {key:"d", action:"right"},
+  {key:"e", action:"mine"},
+  {key:" ", action:"shoot"},
+  {key:"m", action:"build", click:true},
+  {key:"p", action:"sentry", click:true},
 ];
 
 function keyboardInput(e, state) {
   for(let i in keys) {
     let key = keys[i];
     if(e.key === key.key)
-      connection.send(JSON.stringify({h: 'keyPress', data: {inputId: key.action, state: state}}));
+      connection.send(JSON.stringify({h: 'keyPress', data: {input: key.action, state: state, click: key.click || false}}));
   }
 }
 
@@ -154,6 +170,7 @@ var IMAGES = {
   ship: "ship",
   station: "station",
   quarry: "quarry",
+  sentry: "sentry",
 };
 
 for (let i in IMAGES) {
@@ -213,6 +230,12 @@ function drawUniverse() {
       let station = Station.list[i];
       if(isInSight(station.x, station.y, station.radius))
         station.draw();
+    }
+
+    for (let i in Sentry.list) {
+      let sentry = Sentry.list[i];
+      if(isInSight(sentry.x, sentry.y, sentry.radius))
+        sentry.draw();
     }
 
     for (let i in Laser.list) {

@@ -4,6 +4,7 @@ const Laser = require("./Laser.js");
 const StatItem = require("./Inventory.js").StatItem;
 const Station = require("./Station.js");
 const Quarry = require("./Quarry.js");
+const Sentry = require("./Sentry.js");
 
 class Ship {
   constructor(id, x, y) {
@@ -200,6 +201,11 @@ class Ship {
   }
 
   update() {
+    if(this.pressing.sentry) {
+      this.pressing.sentry = false;
+
+      new Sentry(this.x, this.y, this.id);
+    }
     this.updateCollisions();
     this.updateSpeed();
     this.updateAttack();
@@ -270,21 +276,12 @@ class Ship {
 
     //get keyboard input
     ws.onmsg("keyPress", (data)=>{
-      if(data.inputId === 'right')
-        player.pressing.right = data.state;
-      else if(data.inputId === 'left')
-        player.pressing.left = data.state;
-      else if(data.inputId === 'up')
-        player.pressing.up = data.state;
-      else if(data.inputId === 'down')
-        player.pressing.down = data.state;
-      else if(data.inputId === 'mine')
-        player.pressing.mine = data.state;
-      else if(data.inputId === 'shoot')
-        player.pressing.shoot = data.state;
-      else if(data.inputId === 'build')
+      if(data.click) {
         if(!data.state)
-          player.pressing.build = true;
+          player.pressing[data.input] = true;
+      } else {
+        player.pressing[data.input] = data.state;
+      }
     });
 
     //send the current gamestate to the newly logged user
@@ -296,6 +293,7 @@ class Ship {
       laser: Laser.getAllInitPack(),
       station: Station.getAllInitPack(),
       quarry: Quarry.getAllInitPack(),
+      sentry: Sentry.getAllInitPack(),
     });
   }
 

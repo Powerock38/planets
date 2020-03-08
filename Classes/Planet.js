@@ -24,7 +24,7 @@ class Planet {
   }
 
   generateOres() {
-    let nbOres = rnd(1, 10); //how much ore patches
+    let nbOres = rnd(1, 5); //how much ore patches
 
     this.ores = [];
     for(let i = 0; i < nbOres; i++) {

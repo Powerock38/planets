@@ -8,6 +8,7 @@ const hud = {
   fuel: document.getElementById("fuel"),
   shield: document.getElementById("shield"),
   hp: document.getElementById("hp"),
+  compass: document.getElementById("compass"),
 }
 
 function isInSight(x,y,radius) {
@@ -266,6 +267,8 @@ function drawHUD() {
 
     hud.fuel.max = Player.fuelMax;
     hud.fuel.value = Item.list[Player.fuel].amount;
+
+    hud.compass.style.transform = "rotate(" + Player.angle + "rad)";
   }
 }
 

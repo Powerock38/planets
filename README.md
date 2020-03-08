@@ -13,15 +13,13 @@ NodeJS + HTML multiplayer game featuring randomly generated planets and spaceshi
 * Multiple speeds
 * Max speed
 * Factions
+* Asteroids (can be mined)
 * Black hole
 * Structures
-  * Station (makes Science points)
-  * Quarry
   * Fast-transport system
     * Hyperline : fast acceleration towards a specific direction
     * Wormholes ?
     * Hyperdrive docking ring
-  * Death Stars
   * Dyson sphere
   * Planet harvester
   * Black hole harvester

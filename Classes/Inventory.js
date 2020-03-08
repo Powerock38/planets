@@ -113,12 +113,16 @@ new StatItem("cannon_1",{
   laserSpeed: 40,
   laserDurability: 100,
   laserDamage: 10,
+  laserWidth: 3,
+  laserLength: 20
 });
 new StatItem("cannon_2",{
   fireRate: 10,
-  laserSpeed: 70,
-  laserDurability: 300,
-  laserDamage: 20,
+  laserSpeed: 60,
+  laserDurability: 50,
+  laserDamage: 5,
+  laserWidth: 5,
+  laserLength: 15
 });
 
 module.exports = {

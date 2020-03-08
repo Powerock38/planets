@@ -8,8 +8,8 @@ class Laser {
     this.hp = durability;
     this.damage = damage;
 
-    this.width = width || 3;
-    this.length = length || 20;
+    this.width = width;
+    this.length = length;
 
     this.id = uuid("lsr");
     this.spdX = Math.cos(this.angle) * this.speed + spdX;

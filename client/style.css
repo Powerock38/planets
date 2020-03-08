@@ -35,6 +35,19 @@ body {
 #dashboard > #shield::-moz-progress-bar { background: green; }
 #dashboard > #shield::-webkit-progress-value { background: green; }
 
+#compass {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 5%;
+  height: 20%;
+}
+
+#compassImg {
+  width: 100%;
+  height: 100%;
+}
+
 #hud {
   position: fixed;
   top: 0;

@@ -212,28 +212,35 @@ class Ship {
   }
 
   shoot() {
-    new Laser(
-      this.x + Math.cos(this.angle + Math.PI/2) * 25,
-      this.y + Math.sin(this.angle + Math.PI/2) * 25,
-      this.angle,
-      this.id,
-      this.spdX,
-      this.spdY,
-      this.laserSpeed,
-      this.laserDurability,
-      this.laserDamage
-    );
-    new Laser(
-      this.x + Math.cos(this.angle - Math.PI/2) * 25,
-      this.y + Math.sin(this.angle - Math.PI/2) * 25,
-      this.angle,
-      this.id,
-      this.spdX,
-      this.spdY,
-      this.laserSpeed,
-      this.laserDurability,
-      this.laserDamage
-    );
+    if(this.cargo.hasItem(this.fuel, 1)) {
+      this.cargo.removeItem(this.fuel, 1);
+      new Laser(
+        this.x + Math.cos(this.angle + Math.PI/2) * 25,
+        this.y + Math.sin(this.angle + Math.PI/2) * 25,
+        this.angle,
+        this.id,
+        this.spdX,
+        this.spdY,
+        this.laserSpeed,
+        this.laserDurability,
+        this.laserDamage,
+        this.laserWidth,
+        this.laserLength
+      );
+      new Laser(
+        this.x + Math.cos(this.angle - Math.PI/2) * 25,
+        this.y + Math.sin(this.angle - Math.PI/2) * 25,
+        this.angle,
+        this.id,
+        this.spdX,
+        this.spdY,
+        this.laserSpeed,
+        this.laserDurability,
+        this.laserDamage,
+        this.laserWidth,
+        this.laserLength
+      );
+    }
   }
 
   getInitPack() {

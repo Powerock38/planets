@@ -47,7 +47,7 @@ class Sentry {
       new Laser(
         this.x + Math.cos(this.angle) * this.radius,
         this.y + Math.sin(this.angle) * this.radius,
-        this.angle, this.ownerId, 0, 0,
+        this.angle, this.ownerId,
         50,  //speed
         500, //durability
         50,  //damage

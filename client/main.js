@@ -3,14 +3,6 @@ const connection = new WebSocket('ws://localhost:2000');
 const canvas = document.getElementById("mainframe");
 const ctx = canvas.getContext("2d");
 
-const hud = {
-  name: document.getElementById("name"),
-  fuel: document.getElementById("fuel"),
-  shield: document.getElementById("shield"),
-  hp: document.getElementById("hp"),
-  compass: document.getElementById("compass"),
-}
-
 function isInSight(x,y,radius) {
   return (x + radius > ctrX &&
     x - radius < ctrX + canvas.width / Zoom &&
@@ -254,22 +246,6 @@ function drawUniverse() {
     ctx.restore();
   }
   // requestAnimationFrame(drawUniverse);
-}
-
-function drawHUD() {
-  if(selfId) {
-    let Player = Ship.list[selfId];
-    hud.hp.max = Player.hpMax;
-    hud.hp.value = Player.hp;
-
-    hud.shield.max = Player.shieldMaxHP;
-    hud.shield.value = Player.shieldHP;
-
-    hud.fuel.max = Player.fuelMax;
-    hud.fuel.value = Item.list[Player.fuel].amount;
-
-    hud.compass.style.transform = "rotate(" + Player.angle + "rad)";
-  }
 }
 
 setInterval(()=>{

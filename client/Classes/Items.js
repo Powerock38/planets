@@ -1,5 +1,5 @@
 class Item {
-  constructor(id,name,desc,param) {
+  constructor(id, name, desc, param) {
     this.id = id;
     this.name = name;
     this.desc = desc;
@@ -25,6 +25,29 @@ class Item {
         str += "<li>" + item.name + " (" + item.amount + ") </li>";
     }
     document.getElementById("inventory").innerHTML = str + "</ul>";
+
+    // for(let i in Item.list) {
+    //   let item = Item.list[i];
+    //   if(item.amount > 0) {
+    //     if(item.color !== undefined) {
+    //       let obj = document.createElement("object");
+    //       obj.type = "image/svg+xml";
+    //       obj.data = "images/ore.svg";
+    //
+    //       obj.width = "64px";
+    //       obj.height = "64px";
+    //
+    //       document.getElementById("inventory").innerHTML = "";
+    //       obj = document.getElementById("inventory").appendChild(obj);
+    //       console.log(obj);
+    //       obj.style.fill = item.color;
+    //
+    //       // for(let path of obj.document.getElementsByTagName("path")) {
+    //       //   path.setAttribute("fill", item.color);
+    //       // }
+    //     }
+    //   }
+    // }
   }
 }
 Item.list = {};

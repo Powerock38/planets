@@ -1,5 +1,5 @@
 class Laser {
-  constructor(x, y, angle, ownerId, spdX, spdY, speed, durability, damage, width, length) {
+  constructor(x, y, angle, ownerId, speed, durability, damage, width, length) {
     this.x = x;
     this.y = y;
     this.angle = angle;
@@ -12,8 +12,8 @@ class Laser {
     this.length = length;
 
     this.id = uuid("lsr");
-    this.spdX = Math.cos(this.angle) * this.speed + spdX;
-    this.spdY = Math.sin(this.angle) * this.speed + spdY;
+    this.spdX = Math.cos(this.angle) * this.speed;
+    this.spdY = Math.sin(this.angle) * this.speed;
     this.toRemove = false;
 
     Laser.list[this.id] = this;

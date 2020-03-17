@@ -1,4 +1,4 @@
-const hudElements = ["name","fuel","shield","hp","compassImg","left_panel","toggle_left_panel"];
+const hudElements = ["inventory","craftlist","name","fuel","shield","hp","compassImg","left_panel","toggle_left_panel"];
 
 let hud = {};
 

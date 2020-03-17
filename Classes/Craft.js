@@ -39,5 +39,20 @@ new Craft("cannon_2",
     {id:"cannon_2",amount:1},
   ]
 );
+new Craft("sentry",
+  [
+    {id:"iron",amount:10},
+    {id:"copper",amount:20},
+  ],[
+    {id:"sentry",amount:1},
+  ]
+);
+new Craft("quarry",
+  [
+    {id:"iron",amount:10},
+  ],[
+    {id:"quarry",amount:1},
+  ]
+);
 
 module.exports = Craft;

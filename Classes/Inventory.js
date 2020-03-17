@@ -1,4 +1,6 @@
 const Craft = require("./Craft.js");
+const Quarry = require("./Quarry.js");
+const Sentry = require("./Sentry.js");
 
 class Inventory {
   constructor(items, owner) {
@@ -8,6 +10,11 @@ class Inventory {
     //listen for crafting requests
     SOCKET_LIST[this.owner.id].onmsg("craft", (data)=>{
       Craft.list[data.craftId].craft(this);
+    });
+
+    //listen for building requests
+    SOCKET_LIST[this.owner.id].onmsg("build", (data)=>{
+      BuildItem.list[data.buildItemId].build(this);
     });
   }
 
@@ -68,6 +75,44 @@ class Inventory {
     });
   }
 }
+
+class BuildItem {
+  constructor(id, buildFunction) {
+    this.id = id;
+    this.buildFunction = buildFunction;
+
+    BuildItem.list[this.id] = this;
+  }
+
+  build(inv) {
+    if(this.buildFunction(inv.owner) && inv.hasItem(this.id, 1)) {
+      inv.removeItem(this.id, 1);
+    }
+  }
+}
+BuildItem.list = {};
+
+new BuildItem("quarry",(ship)=>{
+  if(!ship.on.ore)
+    return false;
+
+  let canBuildHere = true;
+  for (let l in Quarry.list) {
+    if(Quarry.list[l].ore === ship.on.ore)
+      canBuildHere = false;
+  }
+
+  if(canBuildHere && ship.on.ore) {
+    new Quarry(ship.on.planet.x + ship.on.ore.x, ship.on.planet.y + ship.on.ore.y, ship.on.ore, ship.cargo);
+    return true;
+  } else {
+    return false;
+  }
+});
+new BuildItem("sentry",(ship)=>{
+  new Sentry(ship.x, ship.y, ship.id);
+  return true;
+});
 
 class StatItem {
   constructor(id,stats) {

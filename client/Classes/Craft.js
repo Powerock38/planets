@@ -36,8 +36,8 @@ class Craft {
     for(let i in Craft.list)
       ul.appendChild(Craft.list[i].refresh());
 
-    document.getElementById("craftlist").innerHTML = "";
-    document.getElementById("craftlist").appendChild(ul);
+    hud.craftlist.textContent = "";
+    hud.craftlist.appendChild(ul);
   }
 }
 Craft.list = {};

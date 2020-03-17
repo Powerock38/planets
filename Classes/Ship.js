@@ -26,14 +26,17 @@ class Ship {
       right: false,
       left: false,
       shoot: false,
-      mine: false,
-      build: false,
-    }
+    };
+
+    this.on = {
+      system: null,
+      planetGravity: null,
+      planet: null,
+      ore: null
+    };
 
     this.canMine = true;
     this.fireReady = true;
-
-    this.canCraft = false;
 
     this.spdX = 0;
     this.spdY = 0;
@@ -51,6 +54,8 @@ class Ship {
       {id:"engine_1", amount: 1},
       {id:"tank_1", amount: 1},
       {id:"cannon_1", amount: 1},
+      {id:"sentry", amount: 1},
+      {id:"quarry", amount: 1},
     ], this);
 
     this.updateStats();
@@ -65,6 +70,18 @@ class Ship {
 
     Ship.list[this.id] = this;
     initPack.ship.push(this.getInitPack());
+  }
+
+  get canCraft() {
+    let canCraft = false;
+    for (let i in Station.list) {
+      let station = Station.list[i];
+      let stationDistance = getDistance(this, station);
+      if (stationDistance <= station.radius) {
+        canCraft = true;
+      }
+    }
+    return canCraft;
   }
 
   updateStats() {
@@ -120,73 +137,81 @@ class Ship {
   }
 
   updateCollisions() {
-    let canCraft = false;
-    for (let i in Station.list) {
-      let station = Station.list[i];
-      let stationDistance = getDistance(this, station);
-      if (stationDistance <= station.radius) {
-        canCraft = true;
-      }
-    }
-    this.canCraft = canCraft;
-
+    // systems
+    let systemCount = 0;
+    let planetCount = 0;
+    let planetGravityCount = 0;
+    let oreCount = 0;
     for (let i in System.list) {
       let system = System.list[i];
       let systemDistance = getDistance(this, system);
 
-      // if in system range
       if (systemDistance <= system.radius) {
-        //planet collision
+        this.on.system = system;
+
+        //planets
         for (let j in system.planetList) {
           let planet = system.planetList[j];
           let planetDistance = getDistance(this, planet);
 
           if (planetDistance < planet.radius) {
+            this.on.planet = planet;
+
             this.spdX *= planet.friction;
             this.spdY *= planet.friction;
             this.rotationRate *= planet.friction;
 
-            //mining
-            if((this.pressing.mine && this.canMine) || this.pressing.build) {
-              for (let k in planet.ores) {
-                let ore = planet.ores[k];
-                let oreDistance = getDistance(this, {x: planet.x + ore.x, y: planet.y + ore.y});
+            //ores
+            for (let k in planet.ores) {
+              let ore = planet.ores[k];
+              let oreDistance = getDistance(this, {x: planet.x + ore.x, y: planet.y + ore.y});
 
-                if(oreDistance < ore.amount + this.miningRange) {
-                  if(this.pressing.mine) {
-                    ore.mine(this.cargo, 1);
-                    this.canMine = false;
-                    setTimeout(()=>{
-                      this.canMine = true;
-                    }, 1000 / this.miningRate);
-                  }
-
-                  if(this.pressing.build) {
-                    this.pressing.build = false;
-
-                    let canBuildHere = true;
-                    for (let l in Quarry.list) {
-                      if(Quarry.list[l].ore === ore)
-                        canBuildHere = false;
-                    }
-
-                    if(canBuildHere)
-                      new Quarry(planet.x + ore.x, planet.y + ore.y, ore, this.cargo);
-                  }
+              if(oreDistance < ore.amount + this.miningRange) {
+                this.on.ore = ore;
+                //mining
+                if(this.pressing.mine && this.canMine) {
+                  ore.mine(this.cargo, 1);
+                  this.canMine = false;
+                  setTimeout(()=>{
+                    this.canMine = true;
+                  }, 1000 / this.miningRate);
                 }
+              } else {
+                oreCount++;
               }
             }
+          } else {
+            planetCount++;
+          }
 
-            //if in gravity range
-          } else if (planetDistance <= planet.gravity + planet.radius && planetDistance >= planet.radius) {
+          //if in gravity range
+          if (planetDistance <= planet.gravity + planet.radius && planetDistance >= planet.radius) {
+            this.on.planetGravity = planet;
+
             let angle = Math.atan2(planet.y - this.y, planet.x - this.x);
             let speed = planet.mass / (planetDistance * planetDistance);
 
             this.spdX += speed * Math.cos(angle);
             this.spdY += speed * Math.sin(angle);
+          } else {
+            planetGravityCount++;
           }
         }
+      } else {
+        systemCount++;
       }
+    }
+
+    if(systemCount === System.list.length)
+      this.on.system = null;
+    else {
+      if(planetGravityCount === this.on.system.planetList.length)
+        this.on.planetGravity = null;
+
+      if(planetCount === this.on.system.planetList.length)
+        this.on.planet = null;
+      else if(oreCount === this.on.planet.ores.length)
+        this.on.ore = null;
     }
   }
 
@@ -201,11 +226,6 @@ class Ship {
   }
 
   update() {
-    if(this.pressing.sentry) {
-      this.pressing.sentry = false;
-
-      new Sentry(this.x, this.y, this.id);
-    }
     this.updateCollisions();
     this.updateSpeed();
     this.updateAttack();
@@ -279,12 +299,7 @@ class Ship {
 
     //get keyboard input
     ws.onmsg("keyPress", (data)=>{
-      if(data.click) {
-        if(!data.state)
-          player.pressing[data.input] = true;
-      } else {
         player.pressing[data.input] = data.state;
-      }
     });
 
     //send the current gamestate to the newly logged user

@@ -11,6 +11,11 @@ class Item {
     Item.list[this.id] = this;
   }
 
+  reqBuild() {
+    if(this.build !== undefined)
+      connection.send(JSON.stringify({h: 'build', data: {buildItemId: this.id}}));
+  }
+
   static refresh(items) {
     for(let i in Item.list)
       Item.list[i].amount = 0;
@@ -18,13 +23,23 @@ class Item {
       Item.list[items[i].id].amount = items[i].amount;
 
     //display
-    let str = "<ul>";
+    let ul = document.createElement("ul");
     for(let i in Item.list) {
       let item = Item.list[i];
-      if(item.amount > 0)
-        str += "<li>" + item.name + " (" + item.amount + ") </li>";
+      if(item.amount > 0) {
+        let li = document.createElement("li");
+        li.innerHTML = item.name + " (" + item.amount + ")";
+        if(item.build) {
+          let btn = document.createElement("button");
+          btn.innerHTML = "Build";
+          btn.onclick = ()=>{ item.reqBuild() };
+          li.appendChild(btn);
+        }
+        ul.appendChild(li);
+      }
     }
-    document.getElementById("inventory").innerHTML = str + "</ul>";
+    hud.inventory.textContent = "";
+    hud.inventory.appendChild(ul);
 
     // for(let i in Item.list) {
     //   let item = Item.list[i];
@@ -110,6 +125,20 @@ new Item(
   "fuel",
   "Rocket fuel",
   "A good chemical cocktail that makes your spaceship go forward"
+);
+
+//Structures
+new Item(
+  "sentry",
+  "Sentry",
+  "Low accuracy",
+  {build: "sentry"}
+);
+new Item(
+  "quarry",
+  "Quarry",
+  "Autonomous mining system",
+  {build: "quarry"}
 );
 
 //ship parts

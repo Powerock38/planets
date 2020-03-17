@@ -128,15 +128,13 @@ var keys = [
   {key:"d", action:"right"},
   {key:"e", action:"mine"},
   {key:" ", action:"shoot"},
-  {key:"m", action:"build", click:true},
-  {key:"p", action:"sentry", click:true},
 ];
 
 function keyboardInput(e, state) {
   for(let i in keys) {
     let key = keys[i];
     if(e.key === key.key)
-      connection.send(JSON.stringify({h: 'keyPress', data: {input: key.action, state: state, click: key.click || false}}));
+      connection.send(JSON.stringify({h: 'keyPress', data: {input: key.action, state: state}}));
   }
 }
 

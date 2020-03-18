@@ -5,7 +5,7 @@ NodeJS + HTML multiplayer game featuring randomly generated planets and spaceshi
 1. `git clone https://github.com/Powerock38/planets`
 1. `cd planets`
 1. `npm install`
-1. `node app`
+1. `node .`
 1. Go to http://localhost:2000/
 1. Profit !
 

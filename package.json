@@ -8,6 +8,9 @@
   },
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": "13.10.1"
+  },
   "dependencies": {
     "express": "^4.17.1",
     "mongojs": "^3.1.0",

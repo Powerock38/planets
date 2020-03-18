@@ -4,6 +4,7 @@
   "description": "multiplayer canvas js game featuring spaceships and planets",
   "main": "index.js",
   "scripts": {
+    "build": "npm install",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

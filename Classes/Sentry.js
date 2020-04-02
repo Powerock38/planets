@@ -7,6 +7,7 @@ class Sentry {
     this.y = y;
     this.ownerId = ownerId;
 
+    this.hp = 200;
     this.angle = 0;
     this.radius = 100;
     this.range = 4000;
@@ -58,6 +59,14 @@ class Sentry {
       setTimeout(()=>{
         this.fireReady = true;
       }, 1000 / this.fireRate);
+    }
+  }
+
+  takeDamage(damage) {
+    this.hp -= damage;
+    if(this.hp <= 0) {
+      delete Sentry.list[this.id];
+      removePack.sentry.push(this.id);
     }
   }
 

@@ -25,7 +25,7 @@ class Planet {
 
     // draw all ore patches
     if (Zoom > 0.01) {
-      for (var i in this.ores) {
+      for (let i = this.ores.length - 1; i >= 0; i--) {
         let ore = this.ores[i];
         ctx.beginPath();
         ctx.arc(this.x + ore.x, this.y + ore.y, ore.amount, 0, 2 * Math.PI);

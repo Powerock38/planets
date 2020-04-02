@@ -25,7 +25,7 @@ SOCKET_LIST = {};
 DEBUG = true;
 
 initPack = {ship:[], system:[], laser:[], station:[], quarry:[], sentry:[]};
-removePack = {ship:[], laser:[]};
+removePack = {ship:[], laser:[], sentry:[]};
 
 require("./client/common.js");
 const Craft = require("./Classes/Craft.js");

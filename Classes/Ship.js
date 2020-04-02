@@ -137,25 +137,35 @@ class Ship {
   }
 
   updateCollisions() {
+    let onSystem = null;
+    let onPlanet = null;
+    let onPlanetGravity = null;
+    let onOre = null;
+
     // systems
-    let systemCount = 0;
-    let planetCount = 0;
-    let planetGravityCount = 0;
-    let oreCount = 0;
     for (let i in System.list) {
       let system = System.list[i];
       let systemDistance = getDistance(this, system);
 
       if (systemDistance <= system.radius) {
-        this.on.system = system;
+        onSystem = system;
 
         //planets
         for (let j in system.planetList) {
           let planet = system.planetList[j];
           let planetDistance = getDistance(this, planet);
 
-          if (planetDistance < planet.radius) {
-            this.on.planet = planet;
+          //if in gravity range
+          if (planetDistance <= planet.gravity + planet.radius && planetDistance >= planet.radius) {
+            onPlanetGravity = planet;
+
+            let angle = Math.atan2(planet.y - this.y, planet.x - this.x);
+            let speed = planet.mass / (planetDistance * planetDistance);
+
+            this.spdX += speed * Math.cos(angle);
+            this.spdY += speed * Math.sin(angle);
+          } else if (planetDistance < planet.radius) { // if on planet
+            onPlanet = planet;
 
             this.spdX *= planet.friction;
             this.spdY *= planet.friction;
@@ -167,7 +177,7 @@ class Ship {
               let oreDistance = getDistance(this, {x: planet.x + ore.x, y: planet.y + ore.y});
 
               if(oreDistance < ore.amount + this.miningRange) {
-                this.on.ore = ore;
+                onOre = ore;
                 //mining
                 if(this.pressing.mine && this.canMine) {
                   ore.mine(this.cargo, 1);
@@ -176,43 +186,17 @@ class Ship {
                     this.canMine = true;
                   }, 1000 / this.miningRate);
                 }
-              } else {
-                oreCount++;
               }
             }
-          } else {
-            planetCount++;
-          }
-
-          //if in gravity range
-          if (planetDistance <= planet.gravity + planet.radius && planetDistance >= planet.radius) {
-            this.on.planetGravity = planet;
-
-            let angle = Math.atan2(planet.y - this.y, planet.x - this.x);
-            let speed = planet.mass / (planetDistance * planetDistance);
-
-            this.spdX += speed * Math.cos(angle);
-            this.spdY += speed * Math.sin(angle);
-          } else {
-            planetGravityCount++;
           }
         }
-      } else {
-        systemCount++;
       }
     }
 
-    if(systemCount === System.list.length)
-      this.on.system = null;
-    else {
-      if(planetGravityCount === this.on.system.planetList.length)
-        this.on.planetGravity = null;
-
-      if(planetCount === this.on.system.planetList.length)
-        this.on.planet = null;
-      else if(oreCount === this.on.planet.ores.length)
-        this.on.ore = null;
-    }
+    this.on.system = onSystem;
+    this.on.planetGravity = onPlanetGravity;
+    this.on.planet = onPlanet;
+    this.on.ore = onOre;
   }
 
   updateAttack() {
@@ -256,6 +240,24 @@ class Ship {
         this.laserWidth,
         this.laserLength
       );
+    }
+  }
+
+  takeDamage(damage) {
+    if(this.shieldHP > 0) {
+      this.shieldHP -= Math.round(damage * (1 - this.shieldPower));
+    } else {
+      this.hp -= damage;
+      if(this.hp <= 0) {
+        this.hp = this.hpMax;
+        this.shieldHP = this.shieldMaxHP;
+        this.spdX = 0;
+        this.spdY = 0;
+        this.angle = 0;
+        this.rotationRate = 0;
+        this.x = SPAWNx;
+        this.y = SPAWNy;
+      }
     }
   }
 

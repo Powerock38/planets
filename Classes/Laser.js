@@ -27,32 +27,15 @@ class Laser {
     this.y += this.spdY;
 
     let shiplist = require('./Ship.js').list;
-    for(let i in shiplist) {
-      let target = shiplist[i];
-
-      if(getDistance(target, this) < 30 && target.id !== this.ownerId) {
-        this.hit(target);
+    let sentrylist = require('./Sentry.js').list;
+    let targetlist = {...shiplist, ...sentrylist};
+    for(let i in targetlist) {
+      let target = targetlist[i];
+      if(getDistance(target, this) < 30 && (target.id !== this.ownerId || target.ownerId !== this.ownerId)) {
+        target.takeDamage(this.damage);
         this.toRemove = true;
+        return;
       }
-    }
-  }
-
-  hit(target) {
-    if(target.shieldHP <= 0) {
-      target.hp -= this.damage;
-
-      if(target.hp <= 0) {
-        target.hp = target.hpMax;
-        target.spdX = 0;
-        target.spdY = 0;
-        target.angle = 0;
-        target.rotationRate = 0;
-        target.x = SPAWNx;
-        target.y = SPAWNy;
-        target.shieldHP = target.shieldMaxHP;
-      }
-    } else {
-      target.shieldHP -= Math.round(this.damage * (1 - target.shieldPower));
     }
   }
 

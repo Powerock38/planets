@@ -117,6 +117,10 @@ connection.onmessage = (message)=>{
     for(let i in data.laser) {
       delete Laser.list[data.laser[i]];
     }
+
+    for(let i in data.sentry) {
+      delete Sentry.list[data.sentry[i]];
+    }
   }
 }
 

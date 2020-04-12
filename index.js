@@ -50,6 +50,7 @@ function generateUniverse() {
   SPAWNy = spawnSys.y + spawnSys.starRadius;
 
   new Station(SPAWNx, SPAWNy, "station", 500);
+  console.log("Universe generated. Spawn : (" + SPAWNx + " ; " + SPAWNy + ")");
 }
 
 wss.on('connection', (ws)=>{

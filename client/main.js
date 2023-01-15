@@ -1,4 +1,4 @@
-const connection = new WebSocket('ws://localhost:2000');
+const connection = new WebSocket('ws://' + window.location.host);
 
 const canvas = document.getElementById("mainframe");
 const ctx = canvas.getContext("2d");

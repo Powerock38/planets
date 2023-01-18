@@ -1,7 +1,26 @@
+html,
 body {
   margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: sans-serif;
 }
 
 canvas {
   background-color: black;
+}
+
+#hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.hud-text {
+  margin: 10px;
+  color: white;
 }

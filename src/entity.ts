@@ -1,3 +1,5 @@
+import { CANVAS, CENTER_X, CENTER_Y, ZOOM } from "./main";
+
 export abstract class Entity {
   static all: Entity[] = [];
 
@@ -7,15 +9,83 @@ export abstract class Entity {
 
   id = Entity.generateId();
 
-  speed = 0;
-  speedAngle = 0;
-  maxSpeed = 10;
-  maxSpeedAngle = 0.2;
+  children: Entity[] = [];
+  parent?: Entity;
 
-  constructor(protected x = 0, protected y = 0, protected angle = 0) {
-    Entity.all.push(this);
+  private childrenFlat: Entity[] = [];
+
+  getChildrenFlat(): Entity[] {
+    if (this.children && this.childrenFlat.length === 0) {
+      for (const child of this.children) {
+        this.childrenFlat.push(...child.getChildrenFlat());
+        this.childrenFlat.push(child);
+      }
+    }
+    return this.childrenFlat;
   }
 
-  abstract update(): void;
-  abstract draw(): void;
+  constructor(public radius: number, public x = 0, public y = 0) {}
+
+  abstract drawSelf?(ctx: CanvasRenderingContext2D): void;
+
+  abstract updateSelf?(): void;
+
+  get realX(): number {
+    return this.parent ? this.parent.realX + this.x : this.x;
+  }
+
+  get realY(): number {
+    return this.parent ? this.parent.realY + this.y : this.y;
+  }
+
+  update() {
+    this.updateSelf?.();
+    for (const child of this.children) {
+      child.update();
+    }
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    if (
+      this.realX + this.radius > CENTER_X &&
+      this.realX - this.radius < CENTER_X + CANVAS.width / ZOOM &&
+      this.realY + this.radius > CENTER_Y &&
+      this.realY - this.radius < CENTER_Y + CANVAS.height / ZOOM
+    ) {
+      this.drawSelf?.(ctx);
+    }
+    if (this.children) {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      for (const child of this.children) {
+        child.draw(ctx);
+      }
+      ctx.restore();
+    }
+  }
+
+  addChild(child: Entity) {
+    this.children.push(child);
+    child.parent = this;
+  }
+
+  addChildren(children: Entity[]) {
+    for (const child of children) {
+      this.addChild(child);
+    }
+  }
+
+  removeChild(child: Entity) {
+    const index = this.children.indexOf(child);
+    if (index !== -1) {
+      this.children.splice(index, 1);
+      this.childrenFlat = [];
+    }
+  }
+
+  isInside(x: number, y: number): boolean {
+    return (
+      Math.sqrt((x - this.realX) ** 2 + (y - this.realY) ** 2) < this.radius
+    );
+  }
 }

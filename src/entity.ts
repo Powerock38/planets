@@ -83,7 +83,7 @@ export abstract class Entity {
     }
   }
 
-  isInside(x: number, y: number): boolean {
+  collides(x: number, y: number): boolean {
     return (
       Math.sqrt((x - this.realX) ** 2 + (y - this.realY) ** 2) < this.radius
     );

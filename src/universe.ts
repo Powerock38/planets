@@ -1,5 +1,5 @@
+import { Astre } from "./astre";
 import { Entity } from "./entity";
-import { Planet } from "./planet";
 
 export class Universe extends Entity {
   constructor() {
@@ -16,7 +16,7 @@ export class Universe extends Entity {
 
   updateSelf: undefined;
 
-  isInside(_: number, __: number): boolean {
+  collides(_: number, __: number): boolean {
     return true;
   }
 
@@ -25,11 +25,17 @@ export class Universe extends Entity {
     child.parent = undefined;
   }
 
-  findPlanet(predicate: (entity: Entity) => boolean): Planet | undefined {
-    const planets = this.getChildrenFlat().filter(
-      (entity) => entity instanceof Planet
-    ) as Planet[];
+  findAstre(predicate: (planet: Astre) => boolean): Astre | undefined {
+    const astres = this.getChildrenFlat().filter(
+      (planet) => planet instanceof Astre
+    ) as Astre[];
 
-    return planets.find(predicate);
+    return astres.find(predicate);
+  }
+
+  get astres(): Astre[] {
+    return this.getChildrenFlat().filter(
+      (planet) => planet instanceof Astre
+    ) as Astre[];
   }
 }

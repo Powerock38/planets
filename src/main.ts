@@ -1,6 +1,7 @@
+import { Astre } from "./astre";
 import { hudSlider, hudText } from "./hud";
-import { Planet } from "./planet";
 import { Ship } from "./ship";
+import { Vector } from "./types";
 import { Universe } from "./universe";
 import { loadImages } from "./utils";
 
@@ -30,7 +31,7 @@ document.addEventListener("wheel", (e) => {
 export let CENTER_X = -CANVAS.width / (2 * ZOOM);
 export let CENTER_Y = -CANVAS.height / (2 * ZOOM);
 
-function draw(pov: { x: number; y: number }, universe: Universe) {
+function draw(pov: Vector, universe: Universe) {
   ctx.clearRect(0, 0, CANVAS.width, CANVAS.height);
   // ctx.setLineDash([10, 10]);
 
@@ -57,9 +58,9 @@ function draw(pov: { x: number; y: number }, universe: Universe) {
 export const IMAGES = await loadImages(["ship"]);
 
 const universe = new Universe();
-universe.addChild(new Planet(10000, 10000, 500, 20, 1000, 0));
+universe.addChild(new Astre(10000, 10000, 10000, 20, 1000, 0));
 
-const ship = new Ship();
+const ship = new Ship(universe);
 universe.addChild(ship);
 
 hudSlider("thrust", ship.maxSpeed, 0, 100, 0, (value) => {
@@ -70,10 +71,15 @@ CANVAS.addEventListener("click", (e: MouseEvent) => {
   const x = CENTER_X + e.clientX / ZOOM;
   const y = CENTER_Y + e.clientY / ZOOM;
 
-  const target = universe.findPlanet((entity) => entity.isInside(x, y));
+  const target = universe.findAstre((entity) => entity.collides(x, y));
   console.log(target);
 
   ship.moveTo(x, y, target);
+});
+
+CANVAS.addEventListener("contextmenu", (e: MouseEvent) => {
+  e.preventDefault();
+  ship.removeMovingMarker();
 });
 
 setInterval(() => universe.update(), 1000 / 20);

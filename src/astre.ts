@@ -1,8 +1,9 @@
 import { Entity } from "./entity";
 import { Ore } from "./ore";
+import { Vector } from "./types";
 import { rnd, rndChoose } from "./utils";
 
-export class Planet extends Entity {
+export class Astre extends Entity {
   static colors = [
     "#FED7A4",
     "#F7AB57",
@@ -57,19 +58,19 @@ export class Planet extends Entity {
   ];
 
   color: string;
-  orbits: number[] = [];
 
   constructor(
     x: number,
     y: number,
-    public mass = rnd(1, 1000),
+    public mass = rnd(100, 100000),
     nbMoons = rnd(0, 10),
     radius = rnd(500, 1000),
-    nbOres = rnd(0, 5)
+    nbOres = rnd(0, 5),
+    public orbitDirection = rndChoose([-1, 1])
   ) {
     super(radius, x, y);
 
-    this.color = rndChoose(Planet.colors);
+    this.color = rndChoose(Astre.colors);
 
     if (nbOres) {
       this.addChildren(
@@ -90,14 +91,14 @@ export class Planet extends Entity {
         Array.from({ length: nbMoons }, (_, i) => {
           const orbit = Math.max(
             this.radius * 2.1,
-            rnd(this.mass * 20, this.mass * 100)
+            rnd(this.mass, this.mass * 3)
           );
           const angle = (i / nbMoons) * Math.PI * 2;
 
-          return new Planet(
+          return new Astre(
             orbit * Math.cos(angle),
             orbit * Math.sin(angle),
-            rnd(this.mass * 0.05, this.mass * 0.3),
+            rnd(this.mass * 0.1, this.mass * 0.9),
             rnd(0, nbMoons * 0.1)
           );
         })
@@ -106,7 +107,7 @@ export class Planet extends Entity {
   }
 
   drawSelf(ctx: CanvasRenderingContext2D) {
-    if (this.parent instanceof Planet) {
+    if (this.parent instanceof Astre) {
       ctx.beginPath();
       ctx.lineWidth = 5;
       ctx.arc(0, 0, Math.sqrt(this.x ** 2 + this.y ** 2), 0, 2 * Math.PI);
@@ -118,15 +119,40 @@ export class Planet extends Entity {
     ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
     ctx.fillStyle = this.color;
     ctx.fill();
+
+    ctx.beginPath();
+    ctx.lineWidth = 20;
+    ctx.arc(this.x, this.y, this.radius + this.mass, 0, 2 * Math.PI);
+    ctx.strokeStyle = "yellow";
+    ctx.stroke();
   }
 
   updateSelf() {
-    if (this.parent instanceof Planet) {
+    if (this.parent instanceof Astre) {
+      const pos = this.computeNewPosition();
+      this.x = pos.x;
+      this.y = pos.y;
+    }
+  }
+
+  computeNewPosition(): Vector {
+    if (this.parent instanceof Astre) {
       const angle = Math.atan2(this.y, this.x);
       const orbit = Math.sqrt(this.x ** 2 + this.y ** 2);
-      const newAngle = angle + 1 / this.parent.mass;
-      this.x = orbit * Math.cos(newAngle);
-      this.y = orbit * Math.sin(newAngle);
+      const newAngle = angle + this.orbitDirection / (this.parent.mass / 10);
+      return { x: orbit * Math.cos(newAngle), y: orbit * Math.sin(newAngle) };
     }
+
+    return { x: this.x, y: this.y };
+  }
+
+  computeNewRealPosition(): Vector {
+    if (this.parent instanceof Astre) {
+      const parentPos = this.parent.computeNewRealPosition();
+      const pos = this.computeNewPosition();
+      return { x: parentPos.x + pos.x, y: parentPos.y + pos.y };
+    }
+
+    return { x: this.x, y: this.y };
   }
 }

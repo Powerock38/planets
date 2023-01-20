@@ -1,6 +1,13 @@
 # Planets
 
-Randomly generated planets and spaceships
+Randomly generated planets and spaceships.
+
+## Run
+
+```
+npm install
+npm run dev
+```
 
 ## TODO:
 

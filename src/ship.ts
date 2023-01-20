@@ -1,7 +1,8 @@
+import { Astre } from "./astre";
 import { Entity } from "./entity";
 import { IMAGES } from "./main";
 import { MovingMarker } from "./movingmarker";
-import { Planet } from "./planet";
+import { Universe } from "./universe";
 import { rnd, rndChoose } from "./utils";
 
 export class Ship extends Entity {
@@ -15,7 +16,7 @@ export class Ship extends Entity {
   movingMarker?: MovingMarker;
   stopDistance = 40;
 
-  constructor() {
+  constructor(private universe: Universe) {
     super(30);
   }
 
@@ -23,7 +24,42 @@ export class Ship extends Entity {
     this.movingMarker = new MovingMarker(x, y, target);
   }
 
+  removeMovingMarker() {
+    this.movingMarker = undefined;
+    this.speed = 0;
+    this.speedAngle = 0;
+  }
+
   updateSelf() {
+    let influenceX = 0,
+      influenceY = 0;
+    let onAstre: Astre | undefined;
+    const astres = this.universe.astres;
+
+    for (const astre of astres) {
+      const dx = astre.realX - this.x;
+      const dy = astre.realY - this.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const gravityRange = astre.radius + astre.mass;
+
+      if (distance < astre.radius) {
+        onAstre = astre;
+        break;
+      } else if (distance < gravityRange && distance > astre.radius) {
+        const gravity = (astre.mass * 1000) / distance ** 2;
+        const angle = Math.atan2(dy, dx);
+        influenceX += Math.cos(angle) * gravity;
+        influenceY += Math.sin(angle) * gravity;
+      }
+    }
+
+    if (onAstre) {
+      const newRealPos = onAstre.computeNewRealPosition();
+      // overwrite gravity influences
+      influenceX = newRealPos.x - onAstre.realX;
+      influenceY = newRealPos.y - onAstre.realY;
+    }
+
     if (this.movingMarker) {
       this.movingMarker.update();
 
@@ -45,22 +81,18 @@ export class Ship extends Entity {
       // move
       const distance = Math.sqrt(dx * dx + dy * dy);
       this.speed = Math.max(
-        0.1,
+        1,
         this.maxSpeed * Math.min(1, (distance - this.stopDistance) / distance)
       );
 
       if (distance < this.stopDistance) {
-        if (!(this.movingMarker.target instanceof Planet)) {
-          this.movingMarker = undefined;
-          this.speed = 0;
-          this.speedAngle = 0;
-        }
-      } else {
-        this.angle += this.speedAngle;
-        this.x += Math.cos(this.angle) * this.speed;
-        this.y += Math.sin(this.angle) * this.speed;
+        this.removeMovingMarker();
       }
     }
+
+    this.angle += this.speedAngle;
+    this.x += influenceX + Math.cos(this.angle) * this.speed;
+    this.y += influenceY + Math.sin(this.angle) * this.speed;
   }
 
   drawSelf(ctx: CanvasRenderingContext2D) {
@@ -68,6 +100,7 @@ export class Ship extends Entity {
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angle);
     ctx.translate(-this.x, -this.y);
+    ctx.lineWidth = 2;
 
     if (this.speed > 0) {
       for (let i = 0; i < 20; i++) {

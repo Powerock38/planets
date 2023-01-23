@@ -14,17 +14,11 @@ export abstract class Entity {
 
   private childrenFlat: Entity[] = [];
 
-  getChildrenFlat(): Entity[] {
-    if (this.children && this.childrenFlat.length === 0) {
-      for (const child of this.children) {
-        this.childrenFlat.push(...child.getChildrenFlat());
-        this.childrenFlat.push(child);
-      }
-    }
-    return this.childrenFlat;
-  }
+  drawingRadius: number;
 
-  constructor(public radius: number, public x = 0, public y = 0) {}
+  constructor(public radius: number, public x = 0, public y = 0) {
+    this.drawingRadius = radius;
+  }
 
   abstract drawSelf?(ctx: CanvasRenderingContext2D): void;
 
@@ -47,10 +41,10 @@ export abstract class Entity {
 
   draw(ctx: CanvasRenderingContext2D) {
     if (
-      this.realX + this.radius > CENTER_X &&
-      this.realX - this.radius < CENTER_X + CANVAS.width / ZOOM &&
-      this.realY + this.radius > CENTER_Y &&
-      this.realY - this.radius < CENTER_Y + CANVAS.height / ZOOM
+      this.realX + this.drawingRadius > CENTER_X &&
+      this.realX - this.drawingRadius < CENTER_X + CANVAS.width / ZOOM &&
+      this.realY + this.drawingRadius > CENTER_Y &&
+      this.realY - this.drawingRadius < CENTER_Y + CANVAS.height / ZOOM
     ) {
       this.drawSelf?.(ctx);
     }
@@ -81,6 +75,16 @@ export abstract class Entity {
       this.children.splice(index, 1);
       this.childrenFlat = [];
     }
+  }
+
+  getChildrenFlat(): Entity[] {
+    if (this.children && this.childrenFlat.length === 0) {
+      for (const child of this.children) {
+        this.childrenFlat.push(...child.getChildrenFlat());
+        this.childrenFlat.push(child);
+      }
+    }
+    return this.childrenFlat;
   }
 
   collides(x: number, y: number): boolean {

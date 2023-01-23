@@ -1,9 +1,10 @@
 import { Astre } from "./astre";
 import { Entity } from "./entity";
+import { hudText } from "./hud";
 import { IMAGES } from "./main";
 import { MovingMarker } from "./movingmarker";
 import { Universe } from "./universe";
-import { rnd, rndChoose } from "./utils";
+import { rndChoose, rndInt } from "./utils";
 
 export class Ship extends Entity {
   static flameColors = ["#FED7A4", "#F7AB57", "#F58021", "#F05D24", "#F26825"];
@@ -11,10 +12,10 @@ export class Ship extends Entity {
   angle = 0;
   speed = 0;
   speedAngle = 0;
-  maxSpeed = 10;
+  maxSpeed = 30;
   maxSpeedAngle = 0.2;
   movingMarker?: MovingMarker;
-  stopDistance = 40;
+  stopDistance = this.maxSpeed * 3;
 
   constructor(private universe: Universe) {
     super(30);
@@ -39,14 +40,20 @@ export class Ship extends Entity {
     for (const astre of astres) {
       const dx = astre.realX - this.x;
       const dy = astre.realY - this.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+      const distanceFromCenter = Math.sqrt(dx * dx + dy * dy);
       const gravityRange = astre.radius + astre.mass;
 
-      if (distance < astre.radius) {
+      if (distanceFromCenter < astre.radius) {
         onAstre = astre;
         break;
-      } else if (distance < gravityRange && distance > astre.radius) {
-        const gravity = (astre.mass * 1000) / distance ** 2;
+      } else if (
+        distanceFromCenter < gravityRange &&
+        distanceFromCenter > astre.radius
+      ) {
+        const gravity = Math.min(
+          this.maxSpeed * 0.5,
+          astre.mass * (gravityRange / (distanceFromCenter - astre.radius) ** 2)
+        );
         const angle = Math.atan2(dy, dx);
         influenceX += Math.cos(angle) * gravity;
         influenceY += Math.sin(angle) * gravity;
@@ -80,19 +87,32 @@ export class Ship extends Entity {
 
       // move
       const distance = Math.sqrt(dx * dx + dy * dy);
-      this.speed = Math.max(
-        1,
-        this.maxSpeed * Math.min(1, (distance - this.stopDistance) / distance)
-      );
+
+      if (angleDiff < 0.1) {
+        this.speed = Math.max(
+          1,
+          this.maxSpeed * Math.min(1, (distance - this.stopDistance) / distance)
+        );
+      }
 
       if (distance < this.stopDistance) {
         this.removeMovingMarker();
       }
     }
 
+    const newX = this.x + influenceX + Math.cos(this.angle) * this.speed;
+    const newY = this.y + influenceY + Math.sin(this.angle) * this.speed;
+    const dx = newX - this.x;
+    const dy = newY - this.y;
+    const horizontal = (dx > 0 ? "right" : "left") + dx.toFixed(2);
+    const vertical = (dy > 0 ? "down" : "up") + dy.toFixed(2);
+    hudText("direction", `${horizontal} ${vertical}`);
+
+    hudText("speed", "speed=" + this.speed.toFixed(2));
+
     this.angle += this.speedAngle;
-    this.x += influenceX + Math.cos(this.angle) * this.speed;
-    this.y += influenceY + Math.sin(this.angle) * this.speed;
+    this.x = newX;
+    this.y = newY;
   }
 
   drawSelf(ctx: CanvasRenderingContext2D) {
@@ -104,8 +124,8 @@ export class Ship extends Entity {
 
     if (this.speed > 0) {
       for (let i = 0; i < 20; i++) {
-        const angle = rnd(-20, 20) * (Math.PI / 180);
-        const length = (rnd(20, 30) * this.speed) / this.maxSpeed;
+        const angle = rndInt(-20, 20) * (Math.PI / 180);
+        const length = (rndInt(20, 30) * this.speed) / this.maxSpeed;
         ctx.strokeStyle = rndChoose(Ship.flameColors);
         ctx.beginPath();
         const origX = this.x - 30;
@@ -122,8 +142,8 @@ export class Ship extends Entity {
 
     if (this.speedAngle < 0) {
       for (let i = 0; i < 10; i++) {
-        const angle = rnd(-10, 10) * (Math.PI / 180) + Math.PI / 2;
-        const length = rnd(10, 20);
+        const angle = rndInt(-10, 10) * (Math.PI / 180) + Math.PI / 2;
+        const length = rndInt(10, 20);
         ctx.strokeStyle = rndChoose(Ship.flameColors);
         ctx.beginPath();
         const origX = this.x + 2;
@@ -139,8 +159,8 @@ export class Ship extends Entity {
     }
     if (this.speedAngle > 0) {
       for (let i = 0; i < 10; i++) {
-        const angle = rnd(-10, 10) * (Math.PI / 180) - Math.PI / 2;
-        const length = (rnd(10, 20) * this.speedAngle) / this.maxSpeedAngle;
+        const angle = rndInt(-10, 10) * (Math.PI / 180) - Math.PI / 2;
+        const length = (rndInt(10, 20) * this.speedAngle) / this.maxSpeedAngle;
         ctx.strokeStyle = rndChoose(Ship.flameColors);
         ctx.beginPath();
         const origX = this.x + 2;

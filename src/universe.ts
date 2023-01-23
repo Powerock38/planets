@@ -25,7 +25,7 @@ export class Universe extends Entity {
     child.parent = undefined;
   }
 
-  findAstre(predicate: (planet: Astre) => boolean): Astre | undefined {
+  findAstre(predicate: (astre: Astre) => boolean): Astre | undefined {
     const astres = this.getChildrenFlat().filter(
       (planet) => planet instanceof Astre
     ) as Astre[];

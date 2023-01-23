@@ -1,25 +1,17 @@
 import { Entity } from "./entity";
+import { ZOOM } from "./main";
 
 export class MovingMarker extends Entity {
   targetLocalX?: number;
   targetLocalY?: number;
 
-  crossRadius: number;
-  stopCrossRadius: number;
-  dashSize: number;
-
   constructor(x: number, y: number, public target?: Entity) {
-    const radius = 100;
-    super(radius, x, y);
+    super(1, x, y);
 
     if (target) {
       this.targetLocalX = x - target.realX;
       this.targetLocalY = y - target.realY;
     }
-
-    this.crossRadius = radius * 0.9;
-    this.stopCrossRadius = radius * 0.2;
-    this.dashSize = Math.max(3, Math.ceil(radius * 0.01));
   }
 
   updateSelf() {
@@ -30,21 +22,27 @@ export class MovingMarker extends Entity {
   }
 
   drawSelf(ctx: CanvasRenderingContext2D) {
+    this.radius = 50 / ZOOM;
+    const crossRadius = this.radius * 0.9;
+    const stopCrossRadius = this.radius * 0.2;
+    const dashSize = this.radius * 0.1;
+
     ctx.save();
-    ctx.setLineDash([this.dashSize, this.dashSize]);
-    ctx.lineWidth = this.dashSize;
+    ctx.setLineDash([dashSize, dashSize]);
+    ctx.lineWidth = dashSize;
     ctx.strokeStyle = "red";
     ctx.translate(this.x, this.y);
     ctx.beginPath();
+
     ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
-    ctx.moveTo(-this.crossRadius, this.crossRadius);
-    ctx.lineTo(-this.stopCrossRadius, this.stopCrossRadius);
-    ctx.moveTo(this.crossRadius, this.crossRadius);
-    ctx.lineTo(this.stopCrossRadius, this.stopCrossRadius);
-    ctx.moveTo(this.crossRadius, -this.crossRadius);
-    ctx.lineTo(this.stopCrossRadius, -this.stopCrossRadius);
-    ctx.moveTo(-this.crossRadius, -this.crossRadius);
-    ctx.lineTo(-this.stopCrossRadius, -this.stopCrossRadius);
+    ctx.moveTo(-crossRadius, crossRadius);
+    ctx.lineTo(-stopCrossRadius, stopCrossRadius);
+    ctx.moveTo(crossRadius, crossRadius);
+    ctx.lineTo(stopCrossRadius, stopCrossRadius);
+    ctx.moveTo(crossRadius, -crossRadius);
+    ctx.lineTo(stopCrossRadius, -stopCrossRadius);
+    ctx.moveTo(-crossRadius, -crossRadius);
+    ctx.lineTo(-stopCrossRadius, -stopCrossRadius);
     ctx.stroke();
     ctx.restore();
   }

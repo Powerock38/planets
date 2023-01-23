@@ -3,7 +3,7 @@ import { hudSlider, hudText } from "./hud";
 import { Ship } from "./ship";
 import { Vector } from "./types";
 import { Universe } from "./universe";
-import { loadImages } from "./utils";
+import { loadImages, rndChoose } from "./utils";
 
 export const CANVAS = document.getElementById("canvas") as HTMLCanvasElement;
 export const ctx = CANVAS.getContext("2d") as CanvasRenderingContext2D;
@@ -21,7 +21,7 @@ export let ZOOM = 0.1;
 document.addEventListener("wheel", (e) => {
   if (e.deltaY > 0 && ZOOM > 0.01) {
     ZOOM -= 0.01;
-  } else if (e.deltaY < 0 && ZOOM < 2) {
+  } else if (e.deltaY < 0 && ZOOM < 1) {
     ZOOM += 0.01;
   }
   if (ZOOM < 0.01) ZOOM = 0.01;
@@ -58,7 +58,29 @@ function draw(pov: Vector, universe: Universe) {
 export const IMAGES = await loadImages(["ship"]);
 
 const universe = new Universe();
-universe.addChild(new Astre(10000, 10000, 10000, 20, 1000, 0));
+universe.addChild(
+  new Astre(
+    10000,
+    10000,
+    10000,
+    10,
+    10000,
+    0,
+    rndChoose([
+      "#FFD27D",
+      "#FFA371",
+      "#A6A8FF",
+      "#FFFA86",
+      "#A87BFF",
+      "#FFFFFF",
+      "#FED7A4",
+      "#F7AB57",
+      "#F58021",
+      "#F05D24",
+      "#F26825",
+    ])
+  )
+);
 
 const ship = new Ship(universe);
 universe.addChild(ship);
@@ -71,7 +93,7 @@ CANVAS.addEventListener("click", (e: MouseEvent) => {
   const x = CENTER_X + e.clientX / ZOOM;
   const y = CENTER_Y + e.clientY / ZOOM;
 
-  const target = universe.findAstre((entity) => entity.collides(x, y));
+  const target = universe.findAstre((astre) => astre.isInGravityRange(x, y));
   console.log(target);
 
   ship.moveTo(x, y, target);

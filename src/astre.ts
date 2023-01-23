@@ -1,7 +1,7 @@
 import { Entity } from "./entity";
 import { Ore } from "./ore";
 import { Vector } from "./types";
-import { rnd, rndChoose } from "./utils";
+import { rndChoose, rndFloat, rndInt } from "./utils";
 
 export class Astre extends Entity {
   static colors = [
@@ -57,28 +57,31 @@ export class Astre extends Entity {
     "#424C5C",
   ];
 
-  color: string;
+  rotation = 0;
+  rotationSpeed = 0;
 
   constructor(
     x: number,
     y: number,
-    public mass = rnd(100, 100000),
-    nbMoons = rnd(0, 10),
-    radius = rnd(500, 1000),
-    nbOres = rnd(0, 5),
-    public orbitDirection = rndChoose([-1, 1])
+    public mass = rndInt(100, 100000),
+    nbMoons = rndInt(0, 10),
+    radius = rndInt(500, 1000),
+    nbOres = rndInt(0, 5),
+    public color = rndChoose(Astre.colors),
+    public orbitDirection = rndChoose([-1, 1]),
+    public orbitSpeed = rndFloat(Math.PI / 100000, Math.PI / 1000)
   ) {
     super(radius, x, y);
 
-    this.color = rndChoose(Astre.colors);
+    this.drawingRadius = this.radius + this.mass;
 
     if (nbOres) {
       this.addChildren(
         Array.from({ length: nbOres }, () => {
           const ore = Ore.randomOreType();
           const angle = Math.random() * 2 * Math.PI;
-          const radius = rnd(0, Math.min(ore.max, this.radius * 0.99));
-          const distanceFromCenter = rnd(0, this.radius - radius);
+          const radius = rndInt(0, Math.min(ore.max, this.radius * 0.99));
+          const distanceFromCenter = rndInt(0, this.radius - radius);
           const x = Math.round(distanceFromCenter * Math.cos(angle));
           const y = Math.round(distanceFromCenter * Math.sin(angle));
           return new Ore(x, y, radius, ore);
@@ -91,15 +94,15 @@ export class Astre extends Entity {
         Array.from({ length: nbMoons }, (_, i) => {
           const orbit = Math.max(
             this.radius * 2.1,
-            rnd(this.mass, this.mass * 3)
+            rndInt(this.mass, this.mass * 5)
           );
           const angle = (i / nbMoons) * Math.PI * 2;
 
           return new Astre(
             orbit * Math.cos(angle),
             orbit * Math.sin(angle),
-            rnd(this.mass * 0.1, this.mass * 0.9),
-            rnd(0, nbMoons * 0.1)
+            rndInt(this.mass * 0.1, this.mass * 0.9),
+            rndInt(0, nbMoons * 0.1)
           );
         })
       );
@@ -139,7 +142,7 @@ export class Astre extends Entity {
     if (this.parent instanceof Astre) {
       const angle = Math.atan2(this.y, this.x);
       const orbit = Math.sqrt(this.x ** 2 + this.y ** 2);
-      const newAngle = angle + this.orbitDirection / (this.parent.mass / 10);
+      const newAngle = angle + this.orbitDirection * this.orbitSpeed;
       return { x: orbit * Math.cos(newAngle), y: orbit * Math.sin(newAngle) };
     }
 
@@ -154,5 +157,10 @@ export class Astre extends Entity {
     }
 
     return { x: this.x, y: this.y };
+  }
+
+  isInGravityRange(x: number, y: number) {
+    const distance = Math.sqrt((this.realX - x) ** 2 + (this.realY - y) ** 2);
+    return distance < this.radius + this.mass;
   }
 }

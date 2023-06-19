@@ -1,7 +1,7 @@
 import { Entity } from "./entity";
 import { hexToRgb, rndChoose } from "./utils";
 
-type OreType = {
+export type OreType = {
   type: string;
   max: number;
   color: string;
@@ -27,7 +27,7 @@ export class Ore extends Entity {
   type: string;
   color: string;
 
-  constructor(x: number, y: number, radius: number, oreType: OreType) {
+  constructor(radius: number, x: number, y: number, oreType: OreType) {
     super(radius, x, y);
     this.type = oreType.type;
     this.color = oreType.color;

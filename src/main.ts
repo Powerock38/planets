@@ -66,6 +66,7 @@ universe.addChild(
     10,
     10000,
     0,
+    0,
     rndChoose([
       "#FFD27D",
       "#FFA371",
@@ -78,14 +79,16 @@ universe.addChild(
       "#F58021",
       "#F05D24",
       "#F26825",
-    ])
+    ]),
+    1,
+    0
   )
 );
 
 const ship = new Ship(universe);
 universe.addChild(ship);
 
-hudSlider("thrust", ship.maxSpeed, 0, 100, 0, (value) => {
+hudSlider("thrust", ship.maxSpeed, 0, 5000, 0, (value) => {
   ship.maxSpeed = value;
 });
 
@@ -105,4 +108,5 @@ CANVAS.addEventListener("contextmenu", (e: MouseEvent) => {
 });
 
 setInterval(() => universe.update(), 1000 / 20);
+
 draw(ship, universe);

@@ -12,7 +12,7 @@ export class Ship extends Entity {
   angle = 0;
   speed = 0;
   speedAngle = 0;
-  maxSpeed = 30;
+  maxSpeed = 300;
   maxSpeedAngle = 0.2;
   movingMarker?: MovingMarker;
   stopDistance = this.maxSpeed * 3;
@@ -61,10 +61,10 @@ export class Ship extends Entity {
     }
 
     if (onAstre) {
-      const newRealPos = onAstre.computeNewRealPosition();
+      const newAbsolutePos = onAstre.computeNewAbsolutePosition();
       // overwrite gravity influences
-      influenceX = newRealPos.x - onAstre.realX;
-      influenceY = newRealPos.y - onAstre.realY;
+      influenceX = newAbsolutePos.x - onAstre.realX;
+      influenceY = newAbsolutePos.y - onAstre.realY;
     }
 
     if (this.movingMarker) {

@@ -22,7 +22,7 @@ export class MovingMarker extends Entity {
   }
 
   drawSelf(ctx: CanvasRenderingContext2D) {
-    this.radius = 50 / ZOOM;
+    this.radius = 25 / ZOOM;
     const crossRadius = this.radius * 0.9;
     const stopCrossRadius = this.radius * 0.2;
     const dashSize = this.radius * 0.1;

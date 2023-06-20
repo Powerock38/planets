@@ -1,7 +1,7 @@
 import { Astre } from "./astre";
 import { hudSlider, hudText } from "./hud";
 import { Ship } from "./ship";
-import { Vector } from "./types";
+import { Vec2 } from "./types";
 import { Universe } from "./universe";
 import { loadImages, rndChoose } from "./utils";
 
@@ -31,7 +31,7 @@ document.addEventListener("wheel", (e) => {
 export let CENTER_X = -CANVAS.width / (2 * ZOOM);
 export let CENTER_Y = -CANVAS.height / (2 * ZOOM);
 
-function draw(pov: Vector, universe: Universe) {
+function draw(pov: Vec2, universe: Universe) {
   ctx.clearRect(0, 0, CANVAS.width, CANVAS.height);
   // ctx.setLineDash([10, 10]);
 
@@ -96,7 +96,7 @@ CANVAS.addEventListener("click", (e: MouseEvent) => {
   const x = CENTER_X + e.clientX / ZOOM;
   const y = CENTER_Y + e.clientY / ZOOM;
 
-  const target = universe.findAstre((astre) => astre.isInGravityRange(x, y));
+  const target = universe.findAstre((astre) => astre.collidesInGravityRange(x, y));
   console.log(target);
 
   ship.moveTo(x, y, target);

@@ -1,13 +1,13 @@
-import { Entity } from "./entity";
-import { hexToRgb, rndChoose } from "./utils";
+import { PolygonEntity } from "./polygonentity"
+import { hexToRgb, rndChoose, rndInt } from "./utils"
 
 export type OreType = {
-  type: string;
-  max: number;
-  color: string;
-};
+  type: string
+  max: number
+  color: string
+}
 
-export class Ore extends Entity {
+export class Ore extends PolygonEntity {
   static oreTypes: OreType[] = [
     { type: "cobalt", rarity: 0.2, max: 300, color: "#2F4F4F" },
     { type: "nickel", rarity: 0.4, max: 500, color: "#808080" },
@@ -18,28 +18,26 @@ export class Ore extends Entity {
     { type: "uranium", rarity: 0.1, max: 50, color: "#00FF00" },
     { type: "aluminium", rarity: 0.5, max: 800, color: "#A9A9A9" },
     { type: "copper", rarity: 0.7, max: 1000, color: "#B87333" },
-  ].flatMap((ore) => Array(ore.rarity * 10).fill(ore));
+  ].flatMap((ore) => Array(ore.rarity * 10).fill(ore))
 
   static randomOreType(): OreType {
-    return rndChoose(this.oreTypes);
+    return rndChoose(this.oreTypes)
   }
 
-  type: string;
-  color: string;
+  type: string
+  color: string
 
-  constructor(radius: number, x: number, y: number, oreType: OreType) {
-    super(radius, x, y);
-    this.type = oreType.type;
-    this.color = oreType.color;
+  constructor(size: number, x: number, y: number, oreType: OreType) {
+    super(size, x, y, rndInt(3, 6), oreType.color)
+    this.type = oreType.type
+    this.color = oreType.color
   }
 
-  updateSelf: undefined;
+  updateSelf: undefined
 
   drawSelf(ctx: CanvasRenderingContext2D) {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-    const rgb = hexToRgb(this.color);
-    ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`;
-    ctx.fill();
+    const rgb = hexToRgb(this.color)
+    ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`
+    super.drawSelf(ctx)
   }
 }

@@ -16,10 +16,6 @@ export class Universe extends Entity {
 
   updateSelf: undefined;
 
-  collides(_: number, __: number): boolean {
-    return true;
-  }
-
   addChild(child: Entity) {
     this.children.push(child);
     child.parent = undefined;

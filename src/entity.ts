@@ -1,41 +1,39 @@
 import { CANVAS, CENTER_X, CENTER_Y, ZOOM } from "./main";
 
 export abstract class Entity {
-  static all: Entity[] = [];
+  static all: Entity[] = []
 
   static generateId() {
-    return Math.floor(Math.random() * 1000000);
+    return Math.floor(Math.random() * 1000000)
   }
 
-  id = Entity.generateId();
+  id = Entity.generateId()
 
-  children: Entity[] = [];
-  parent?: Entity;
+  children: Entity[] = []
+  parent?: Entity
 
-  private childrenFlat: Entity[] = [];
+  private childrenFlat: Entity[] = []
 
-  drawingRadius: number;
 
-  constructor(public radius: number, public x = 0, public y = 0) {
-    this.drawingRadius = radius;
+  constructor(public drawingRadius: number, public x = 0, public y = 0) {
   }
 
-  abstract drawSelf?(ctx: CanvasRenderingContext2D): void;
+  abstract drawSelf?(ctx: CanvasRenderingContext2D): void
 
-  abstract updateSelf?(): void;
+  abstract updateSelf?(): void
 
   get realX(): number {
-    return this.parent ? this.parent.realX + this.x : this.x;
+    return this.parent ? this.parent.realX + this.x : this.x
   }
 
   get realY(): number {
-    return this.parent ? this.parent.realY + this.y : this.y;
+    return this.parent ? this.parent.realY + this.y : this.y
   }
 
   update() {
-    this.updateSelf?.();
+    this.updateSelf?.()
     for (const child of this.children) {
-      child.update();
+      child.update()
     }
   }
 
@@ -46,50 +44,44 @@ export abstract class Entity {
       this.realY + this.drawingRadius > CENTER_Y &&
       this.realY - this.drawingRadius < CENTER_Y + CANVAS.height / ZOOM
     ) {
-      this.drawSelf?.(ctx);
+      this.drawSelf?.(ctx)
     }
     if (this.children) {
-      ctx.save();
-      ctx.translate(this.x, this.y);
+      ctx.save()
+      ctx.translate(this.x, this.y)
       for (const child of this.children) {
-        child.draw(ctx);
+        child.draw(ctx)
       }
-      ctx.restore();
+      ctx.restore()
     }
   }
 
   addChild(child: Entity) {
-    this.children.push(child);
-    child.parent = this;
+    this.children.push(child)
+    child.parent = this
   }
 
   addChildren(children: Entity[]) {
     for (const child of children) {
-      this.addChild(child);
+      this.addChild(child)
     }
   }
 
   removeChild(child: Entity) {
-    const index = this.children.indexOf(child);
+    const index = this.children.indexOf(child)
     if (index !== -1) {
-      this.children.splice(index, 1);
-      this.childrenFlat = [];
+      this.children.splice(index, 1)
+      this.childrenFlat = []
     }
   }
 
   getChildrenFlat(): Entity[] {
     if (this.children && this.childrenFlat.length === 0) {
       for (const child of this.children) {
-        this.childrenFlat.push(...child.getChildrenFlat());
-        this.childrenFlat.push(child);
+        this.childrenFlat.push(...child.getChildrenFlat())
+        this.childrenFlat.push(child)
       }
     }
-    return this.childrenFlat;
-  }
-
-  collides(x: number, y: number): boolean {
-    return (
-      Math.sqrt((x - this.realX) ** 2 + (y - this.realY) ** 2) < this.radius
-    );
+    return this.childrenFlat
   }
 }

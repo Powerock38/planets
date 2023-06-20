@@ -1,9 +1,9 @@
-import { Entity } from "./entity"
 import { Ore } from "./ore"
-import { Vector } from "./types"
+import { PolygonEntity } from "./polygonentity"
+import { Vec2 } from "./types"
 import { rndChoose, rndExponential, rndFloat, rndInt } from "./utils"
 
-export class Astre extends Entity {
+export class Astre extends PolygonEntity {
   static colors = [
     "#FED7A4",
     "#F7AB57",
@@ -64,14 +64,15 @@ export class Astre extends Entity {
     y: number,
     public mass = rndInt(100, 100000),
     nbMoons = rndInt(0, 10),
-    radius = rndInt(500, 1000),
+    public radius = rndInt(500, 1000),
     nbOres = rndInt(0, 5),
     private nbRings = rndExponential(1), // if 0, it's part of a ring
-    private color = rndChoose(Astre.colors),
+    color = rndChoose(Astre.colors),
     private orbitDirection = rndChoose([-1, 1]),
-    private orbitSpeed = rndFloat(Math.PI / 100000, Math.PI / 1000)
+    private orbitSpeed = rndFloat(Math.PI / 100000, Math.PI / 1000),
+    sides = rndInt(1, 12)
   ) {
-    super(radius, x, y)
+    super(radius, x, y, sides, color)
     this.drawingRadius = this.radius + this.mass
 
     if (nbOres) {
@@ -96,7 +97,7 @@ export class Astre extends Entity {
         Array.from({ length: Math.floor(nbRings) }, (_, i) => {
           const ringOrbit = astreOrbit + i * 1000
           const ringOrbitDirection = rndChoose([-1, 1])
-          const ringOrbitSpeed = rndFloat(Math.PI / 1000, Math.PI / (i*100))
+          const ringOrbitSpeed = rndFloat(Math.PI / 1000, Math.PI / (i * 100))
           const nbAsteroids = Math.floor((2 * Math.PI * ringOrbit) / 1000)
 
           return Array.from({ length: Math.floor(nbAsteroids) }, (_, j) => {
@@ -160,10 +161,7 @@ export class Astre extends Entity {
     }
 
     // astre
-    ctx.beginPath()
-    ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI)
-    ctx.fillStyle = this.color
-    ctx.fill()
+    super.drawSelf(ctx)
 
     // gravity field
     if (this.mass) {
@@ -187,7 +185,7 @@ export class Astre extends Entity {
     }
   }
 
-  computeNewPosition(): Vector {
+  computeNewPosition(): Vec2 {
     if (this.parent instanceof Astre) {
       const angle = Math.atan2(this.y, this.x)
       const orbit = Math.sqrt(this.x ** 2 + this.y ** 2)
@@ -201,7 +199,7 @@ export class Astre extends Entity {
     return { x: this.x, y: this.y }
   }
 
-  computeNewAbsolutePosition(): Vector {
+  computeNewAbsolutePosition(): Vec2 {
     if (this.parent instanceof Astre) {
       const parentPos = this.parent.computeNewAbsolutePosition()
       const pos = this.computeNewPosition()
@@ -211,7 +209,7 @@ export class Astre extends Entity {
     return { x: this.x, y: this.y }
   }
 
-  isInGravityRange(x: number, y: number) {
+  collidesInGravityRange(x: number, y: number) {
     const distance = Math.sqrt((this.realX - x) ** 2 + (this.realY - y) ** 2)
     return distance < this.radius + this.mass
   }

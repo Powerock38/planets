@@ -1,8 +1,11 @@
 import { Astre } from "./astre"
 import { Entity } from "./entity"
-import { hudText } from "./hud"
+import { hudButton, hudText } from "./hud"
+import { Inventory } from "./inventory"
 import { IMAGES } from "./main"
-import { MovingMarker } from "./movingmarker"
+import { Marker } from "./marker"
+import { Ore } from "./ore"
+import { Quarry } from "./quarry"
 import { Universe } from "./universe"
 import { rndChoose, rndInt } from "./utils"
 
@@ -14,68 +17,104 @@ export class Ship extends Entity {
   speedAngle = 0
   maxSpeed = 300
   maxSpeedAngle = 0.2
-  movingMarker?: MovingMarker
-  stopDistance = this.maxSpeed * 3
+  marker?: Marker
+  initialDistance = 0
+
+  onAstre?: Astre
+  inventory = new Inventory()
+  reachRadius = 100
 
   constructor(private universe: Universe) {
     super(30)
+
+    hudButton("quarry", "build quarry", () => {
+      if (this.onAstre) {
+        const ore = (
+          this.onAstre.children.filter(
+            (ore) =>
+              ore instanceof Ore &&
+              ore.amount > 0 &&
+              !ore.children.find((child) => child instanceof Quarry)
+          ) as Ore[]
+        ).find((ore) => ore.collides(this.x, this.y))
+
+        if (ore) {
+          const quarry = new Quarry(ore, this.inventory)
+          ore.addChild(quarry)
+          console.log("built quarry", quarry)
+        }
+      }
+    })
   }
 
-  moveTo(x: number, y: number, target?: Entity) {
-    this.movingMarker = new MovingMarker(x, y, target)
+  moveTo(x: number, y: number) {
+    const target = this.universe.findAstre((astre) =>
+      astre.collidesInGravityRange(x, y)
+    )
+    console.log(target)
+    this.marker = new Marker(x, y, target)
+    this.initialDistance = Math.sqrt((this.x - x) ** 2 + (this.y - y) ** 2)
   }
 
   removeMovingMarker() {
-    this.movingMarker = undefined
+    this.marker = undefined
     this.speed = 0
     this.speedAngle = 0
+    this.initialDistance = 0
   }
 
   updateSelf() {
     let influenceX = 0,
       influenceY = 0
-    let onAstre: Astre | undefined
-    const astres = this.universe.astres
+    let astres = this.onAstre
+      ? [this.onAstre, ...this.universe.getAstresExcept(this.onAstre)]
+      : this.universe.getAstres()
 
     for (const astre of astres) {
-      const dx = astre.realX - this.x
-      const dy = astre.realY - this.y
-      const distanceFromCenter = Math.sqrt(dx * dx + dy * dy)
-      const gravityRange = astre.radius + astre.mass
+      if (astre.collidesInGravityRange(this.x, this.y)) {
+        if (this.onAstre !== astre) {
+          this.onAstre = astre
+          console.log("on astre", this.onAstre)
+        }
 
-      const doCollide = astre.collides(this.x, this.y)
+        const newAbsolutePos = this.onAstre.computeNewAbsolutePosition()
+        influenceX = newAbsolutePos.x - this.onAstre.realX
+        influenceY = newAbsolutePos.y - this.onAstre.realY
 
-      if (doCollide) {
-        onAstre = astre
         break
-      } else if (
-        distanceFromCenter < gravityRange
-      ) {
-        const gravity = Math.min(
-          this.maxSpeed * 0.5,
-          astre.mass * (gravityRange / (distanceFromCenter - astre.radius) ** 2)
-        )
-        const angle = Math.atan2(dy, dx)
-        influenceX += Math.cos(angle) * gravity
-        influenceY += Math.sin(angle) * gravity
+        // const gravity = Math.min(this.maxSpeed * 0.5, astre.mass * (gravityRange / (distanceFromCenter - astre.radius) ** 2))
+        // const angle = Math.atan2(dy, dx)
+        // influenceX += Math.cos(angle) * gravity
+        // influenceY += Math.sin(angle) * gravity
       }
     }
 
-    if (onAstre) {
-      console.log("on astre", onAstre.id, onAstre.mass)
-      const newAbsolutePos = onAstre.computeNewAbsolutePosition()
-      // overwrite gravity influences
-      influenceX = newAbsolutePos.x - onAstre.realX
-      influenceY = newAbsolutePos.y - onAstre.realY
-    }
+    this.moveTowardsMarker()
 
-    if (this.movingMarker) {
-      this.movingMarker.update()
+    const newX = this.x + influenceX + Math.cos(this.angle) * this.speed
+    const newY = this.y + influenceY + Math.sin(this.angle) * this.speed
+    const dx = newX - this.x
+    const dy = newY - this.y
+    hudText(
+      "direction",
+      `${(dx > 0 ? "right" : "left") + dx.toFixed(2)}
+      ${(dy > 0 ? "down" : "up") + dy.toFixed(2)}`
+    )
 
-      const dx = this.movingMarker.x - this.x
-      const dy = this.movingMarker.y - this.y
+    hudText("speed", "speed=" + this.speed.toFixed(2))
 
-      // rotate
+    this.angle += this.speedAngle
+    this.x = newX
+    this.y = newY
+  }
+
+  private moveTowardsMarker() {
+    if (this.marker) {
+      this.marker.update()
+
+      const dx = this.marker.x - this.x
+      const dy = this.marker.y - this.y
+      const distance = Math.sqrt(dx * dx + dy * dy)
       let angleDiff = Math.atan2(dy, dx) - this.angle
       if (angleDiff > Math.PI) {
         angleDiff -= Math.PI * 2
@@ -86,34 +125,12 @@ export class Ship extends Entity {
       this.speedAngle =
         Math.min(Math.abs(angleDiff), this.maxSpeedAngle) * Math.sign(angleDiff)
 
-      // move
-      const distance = Math.sqrt(dx * dx + dy * dy)
+      this.speed = Math.min(distance, this.maxSpeed)
 
-      if (angleDiff < 0.1) {
-        this.speed = Math.max(
-          1,
-          this.maxSpeed * Math.min(1, (distance - this.stopDistance) / distance)
-        )
-      }
-
-      if (distance < this.stopDistance) {
+      if (distance <= this.maxSpeed) {
         this.removeMovingMarker()
       }
     }
-
-    const newX = this.x + influenceX + Math.cos(this.angle) * this.speed
-    const newY = this.y + influenceY + Math.sin(this.angle) * this.speed
-    const dx = newX - this.x
-    const dy = newY - this.y
-    const horizontal = (dx > 0 ? "right" : "left") + dx.toFixed(2)
-    const vertical = (dy > 0 ? "down" : "up") + dy.toFixed(2)
-    hudText("direction", `${horizontal} ${vertical}`)
-
-    hudText("speed", "speed=" + this.speed.toFixed(2))
-
-    this.angle += this.speedAngle
-    this.x = newX
-    this.y = newY
   }
 
   drawSelf(ctx: CanvasRenderingContext2D) {
@@ -189,6 +206,6 @@ export class Ship extends Entity {
 
     ctx.restore()
 
-    this.movingMarker?.draw(ctx)
+    this.marker?.draw(ctx)
   }
 }

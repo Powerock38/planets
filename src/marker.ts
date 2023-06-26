@@ -1,7 +1,7 @@
 import { Entity } from "./entity";
 import { ZOOM } from "./main";
 
-export class MovingMarker extends Entity {
+export class Marker extends Entity {
   targetLocalX?: number;
   targetLocalY?: number;
 
@@ -22,10 +22,10 @@ export class MovingMarker extends Entity {
   }
 
   drawSelf(ctx: CanvasRenderingContext2D) {
-    this.drawingRadius = 25 / ZOOM;
-    const crossRadius = this.drawingRadius * 0.9
-    const stopCrossRadius = this.drawingRadius * 0.2
-    const dashSize = this.drawingRadius * 0.1
+    this.radius = 25 / ZOOM;
+    const crossRadius = this.radius * 0.9
+    const stopCrossRadius = this.radius * 0.2
+    const dashSize = this.radius * 0.1
 
     ctx.save();
     ctx.setLineDash([dashSize, dashSize]);
@@ -34,7 +34,7 @@ export class MovingMarker extends Entity {
     ctx.translate(this.x, this.y);
     ctx.beginPath();
 
-    ctx.arc(0, 0, this.drawingRadius, 0, Math.PI * 2)
+    ctx.arc(0, 0, this.radius, 0, Math.PI * 2)
     ctx.moveTo(-crossRadius, crossRadius);
     ctx.lineTo(-stopCrossRadius, stopCrossRadius);
     ctx.moveTo(crossRadius, crossRadius);

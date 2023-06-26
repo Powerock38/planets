@@ -5,13 +5,13 @@ export abstract class PolygonEntity extends Entity {
   verticesRelative: Vec2[] = []
 
   constructor(
-    private size: number,
+    radius: number,
     public x: number,
     public y: number,
-    private sides: number, // < 3 = circle
+    public sides: number, // < 3 = circle
     public color: string
   ) {
-    super(size, x, y)
+    super(radius, x, y)
 
     if (this.sides >= 3) {
       this.generateVertices()
@@ -22,8 +22,8 @@ export abstract class PolygonEntity extends Entity {
     this.verticesRelative = []
     for (let i = 0; i < this.sides; i++) {
       const angle = (Math.PI * 2 * i) / this.sides
-      const vertexX = Math.cos(angle) * this.size
-      const vertexY = Math.sin(angle) * this.size
+      const vertexX = Math.cos(angle) * this.radius
+      const vertexY = Math.sin(angle) * this.radius
       this.verticesRelative.push({ x: vertexX, y: vertexY })
     }
   }
@@ -34,7 +34,7 @@ export abstract class PolygonEntity extends Entity {
     ctx.beginPath()
 
     if (this.sides < 3) {
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
     } else {
       for (const [i, vertex] of this.verticesRelative.entries()) {
         if (i === 0) {
@@ -53,7 +53,7 @@ export abstract class PolygonEntity extends Entity {
     if (this.sides < 3) {
       //circle
       return (
-        Math.sqrt((x - this.realX) ** 2 + (y - this.realY) ** 2) < this.size
+        Math.sqrt((x - this.realX) ** 2 + (y - this.realY) ** 2) < this.radius
       )
     } else {
       // polygon
@@ -76,6 +76,14 @@ export abstract class PolygonEntity extends Entity {
       }
 
       return inside
+    }
+  }
+
+  getInnerRadius(): number {
+    if (this.sides < 3) {
+      return this.radius
+    } else {
+      return this.radius * Math.cos(Math.PI / this.sides)
     }
   }
 }

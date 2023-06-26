@@ -14,8 +14,10 @@ export abstract class Entity {
 
   private childrenFlat: Entity[] = []
 
+  drawingRadius: number
 
-  constructor(public drawingRadius: number, public x = 0, public y = 0) {
+  constructor(public radius: number, public x = 0, public y = 0) {
+    this.drawingRadius = radius
   }
 
   abstract drawSelf?(ctx: CanvasRenderingContext2D): void
@@ -59,6 +61,7 @@ export abstract class Entity {
   addChild(child: Entity) {
     this.children.push(child)
     child.parent = this
+    this.childrenFlat = []
   }
 
   addChildren(children: Entity[]) {

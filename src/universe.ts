@@ -1,37 +1,43 @@
-import { Astre } from "./astre";
-import { Entity } from "./entity";
+import { Astre } from "./astre"
+import { Entity } from "./entity"
 
 export class Universe extends Entity {
   constructor() {
-    super(Infinity);
+    super(Infinity)
   }
 
   draw(ctx: CanvasRenderingContext2D) {
     for (const child of this.children) {
-      child.draw(ctx);
+      child.draw(ctx)
     }
   }
 
-  drawSelf: undefined;
+  drawSelf: undefined
 
-  updateSelf: undefined;
+  updateSelf: undefined
 
   addChild(child: Entity) {
-    this.children.push(child);
-    child.parent = undefined;
+    this.children.push(child)
+    child.parent = undefined
   }
 
   findAstre(predicate: (astre: Astre) => boolean): Astre | undefined {
     const astres = this.getChildrenFlat().filter(
       (planet) => planet instanceof Astre
-    ) as Astre[];
+    ) as Astre[]
 
-    return astres.find(predicate);
+    return astres.find(predicate)
   }
 
-  get astres(): Astre[] {
+  getAstres(): Astre[] {
     return this.getChildrenFlat().filter(
       (planet) => planet instanceof Astre
-    ) as Astre[];
+    ) as Astre[]
+  }
+
+  getAstresExcept(astre: Astre): Astre[] {
+    return this.getChildrenFlat().filter(
+      (planet) => planet instanceof Astre && planet !== astre
+    ) as Astre[]
   }
 }

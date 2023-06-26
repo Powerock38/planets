@@ -1,5 +1,5 @@
 import { PolygonEntity } from "./polygonentity"
-import { hexToRgb, rndChoose, rndInt } from "./utils"
+import { hexToRgb, rndChoose } from "./utils"
 
 export type OreType = {
   type: string
@@ -24,20 +24,34 @@ export class Ore extends PolygonEntity {
     return rndChoose(this.oreTypes)
   }
 
-  type: string
-  color: string
+  amount: number
 
-  constructor(size: number, x: number, y: number, oreType: OreType) {
-    super(size, x, y, rndInt(3, 6), oreType.color)
-    this.type = oreType.type
-    this.color = oreType.color
+  constructor(radius: number, x: number, y: number, public oreType: OreType) {
+    super(radius, x, y, 0, oreType.color)
+    this.amount = radius
   }
 
-  updateSelf: undefined
+  updateSelf() {
+    const radius = this.amount
+    const sides = Math.max(3, Math.floor((this.amount / this.oreType.max) * 9) + 3)
+    if (radius !== this.radius || sides !== this.sides) {
+      this.radius = radius
+      this.sides = sides
+      this.generateVertices()
+    }
+  }
 
   drawSelf(ctx: CanvasRenderingContext2D) {
     const rgb = hexToRgb(this.color)
     ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`
     super.drawSelf(ctx)
+
+    const fontSize = Math.max(100, this.amount)
+    ctx.fillStyle = "#fff"
+    ctx.font = `bold ${fontSize}px sans-serif`
+    ctx.textAlign = "center"
+    ctx.textBaseline = "middle"
+    ctx.fillText(this.oreType.type, this.x, this.y)
+    ctx.fillText(this.amount.toString(), this.x, this.y + fontSize)
   }
 }

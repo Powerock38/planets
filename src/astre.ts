@@ -66,45 +66,76 @@ export class Astre extends PolygonEntity {
     nbMoons = rndInt(0, 10),
     public radius = rndInt(500, 1000),
     nbOres = rndInt(0, 5),
-    private nbRings = rndExponential(1), // if 0, it's part of a ring
+    public nbRings = rndExponential(1), // if 0, it's part of a ring
     color = rndChoose(Astre.colors),
     private orbitDirection = rndChoose([-1, 1]),
     private orbitSpeed = rndFloat(Math.PI / 100000, Math.PI / 1000),
-    sides = rndInt(1, 12)
+    sides = rndChoose([0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12])
   ) {
     super(radius, x, y, sides, color)
     this.drawingRadius = this.radius + this.mass
 
-    if (nbOres) {
-      this.addChildren(
-        Array.from({ length: nbOres }, () => {
-          const oreType = Ore.randomOreType()
-          const angle = Math.random() * 2 * Math.PI
-          const radius = rndInt(0, Math.min(oreType.max, this.radius * 0.99))
-          const distanceFromCenter = rndInt(0, this.radius - radius)
-          const x = Math.round(distanceFromCenter * Math.cos(angle))
-          const y = Math.round(distanceFromCenter * Math.sin(angle))
-          return new Ore(radius, x, y, oreType)
-        })
-      )
+    // ORES
+    for (let i = 0; i < nbOres; i++) {
+      let isValidCircle = false
+      let newOre: Ore | undefined
+      const oreType = Ore.randomOreType()
+
+      let triesLeft = 1000
+
+      while (!isValidCircle && triesLeft-- > 0) {
+        // Generate random radius for the new ore
+        const randomRadius = rndInt(
+          10,
+          Math.min(oreType.max, Math.floor(this.getInnerRadius()))
+        )
+
+        // Generate random position within this astre
+        const angle = Math.random() * 2 * Math.PI
+        const distanceFromCenter = rndInt(0, this.getInnerRadius() - randomRadius)
+        const randomX = Math.round(distanceFromCenter * Math.cos(angle))
+        const randomY = Math.round(distanceFromCenter * Math.sin(angle))
+
+        newOre = new Ore(randomRadius, randomX, randomY, oreType)
+
+        // Check if the new ore overlaps with any existing ores
+        isValidCircle = !this.children
+          .filter((entity) => entity instanceof Ore)
+          .some((ore) => {
+            const dx = ore.x - newOre!.x
+            const dy = ore.y - newOre!.y
+            const distance = Math.sqrt(dx * dx + dy * dy)
+            return distance < ore.radius + newOre!.radius
+          })
+      }
+
+      if (newOre && isValidCircle) {
+        console.log(oreType.type)
+        this.addChild(newOre)
+      }
+
+      // const oreType = Ore.randomOreType()
+      // const angle = Math.random() * 2 * Math.PI
+      // const radius = rndInt(0, Math.min(oreType.max, this.radius * 0.99))
+      // const distanceFromCenter = rndInt(0, this.radius - radius)
+      // const x = Math.round(distanceFromCenter * Math.cos(angle))
+      // const y = Math.round(distanceFromCenter * Math.sin(angle))
+      // this.addChild(new Ore(radius, x, y, oreType))
     }
 
+    // Asteroids belt
     let astreOrbit = this.radius + this.mass
-
     if (nbRings) {
-      // Asteroids belt
       this.addChildren(
         Array.from({ length: Math.floor(nbRings) }, (_, i) => {
           const ringOrbit = astreOrbit + i * 1000
           const ringOrbitDirection = rndChoose([-1, 1])
-          const ringOrbitSpeed = rndFloat(Math.PI / 1000, Math.PI / (i * 100))
+          const ringOrbitSpeed = rndFloat(Math.PI / 10000, Math.PI / (i * 1000))
           const nbAsteroids = Math.floor((2 * Math.PI * ringOrbit) / 1000)
 
           return Array.from({ length: Math.floor(nbAsteroids) }, (_, j) => {
             const astreRadius = rndInt(50, 100)
             const orbitAngle = (j / nbAsteroids) * Math.PI * 2
-
-            const oreType = Ore.randomOreType()
 
             const asteroid = new Astre(
               ringOrbit * Math.cos(orbitAngle),
@@ -114,7 +145,7 @@ export class Astre extends PolygonEntity {
               astreRadius,
               1,
               0,
-              oreType.color,
+              rndChoose(Astre.colors),
               ringOrbitDirection,
               ringOrbitSpeed + rndChoose([-1, 1]) * rndFloat(0, Math.PI / 1000)
             )
@@ -125,8 +156,8 @@ export class Astre extends PolygonEntity {
       )
     }
 
+    // Moons
     if (nbMoons) {
-      // Moons
       this.addChildren(
         Array.from({ length: nbMoons }, (_, i) => {
           const astreRadius = rndInt(500, 1000)
@@ -153,7 +184,7 @@ export class Astre extends PolygonEntity {
   drawSelf(ctx: CanvasRenderingContext2D) {
     // orbit
     if (this.parent instanceof Astre && this.nbRings !== 0) {
-      ctx.lineWidth = this.radius / 100
+      ctx.lineWidth = this.radius / 200
       ctx.beginPath()
       ctx.arc(0, 0, Math.sqrt(this.x ** 2 + this.y ** 2), 0, 2 * Math.PI)
       ctx.strokeStyle = "#F0F0F0"

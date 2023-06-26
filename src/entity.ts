@@ -16,7 +16,7 @@ export abstract class Entity {
 
   drawingRadius: number
 
-  constructor(public radius: number, public x = 0, public y = 0) {
+  constructor(public radius: number, public x: number, public y: number) {
     this.drawingRadius = radius
   }
 
@@ -58,8 +58,8 @@ export abstract class Entity {
     }
   }
 
-  addChild(child: Entity) {
-    this.children.push(child)
+  addChild(child: Entity, index = this.children.length) {
+    this.children.splice(index, 0, child)
     child.parent = this
     this.childrenFlat = []
   }

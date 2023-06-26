@@ -1,5 +1,4 @@
-import { Astre } from "./astre"
-import { hudSlider, hudText } from "./hud"
+import { hudButton, hudSlider, hudText } from "./hud"
 import { Ship } from "./ship"
 import { Vec2 } from "./types"
 import { Universe } from "./universe"
@@ -17,7 +16,7 @@ window.addEventListener("resize", resizeCanvas)
 resizeCanvas()
 
 //mousewheel zoom
-export let ZOOM = 0.1
+export let ZOOM = 0.001
 const MAX_ZOOM = 1
 const MIN_ZOOM = 0.004
 document.addEventListener("wheel", (e) => {
@@ -42,7 +41,7 @@ export let CENTER_Y = -CANVAS.height / (2 * ZOOM)
 
 function draw(pov: Vec2, universe: Universe) {
   ctx.clearRect(0, 0, CANVAS.width, CANVAS.height)
-  // ctx.setLineDash([10, 10]);
+  universe.drawSelf(ctx)
 
   //center & zoom
   CENTER_X = pov.x - CANVAS.width / 2 / ZOOM
@@ -66,40 +65,17 @@ function draw(pov: Vec2, universe: Universe) {
 
 export const IMAGES = await loadImages(["ship", "quarry"])
 
-const universe = new Universe()
-universe.addChild(
-  new Astre(
-    10000,
-    10000,
-    10000,
-    10,
-    10000,
-    0,
-    0,
-    rndChoose([
-      "#FFD27D",
-      "#FFA371",
-      "#A6A8FF",
-      "#FFFA86",
-      "#A87BFF",
-      "#FFFFFF",
-      "#FED7A4",
-      "#F7AB57",
-      "#F58021",
-      "#F05D24",
-      "#F26825",
-    ]),
-    1,
-    0,
-    0,
-  )
-)
+const universe = new Universe(1000)
 
 const ship = new Ship(universe)
 universe.addChild(ship)
 
 hudSlider("thrust", ship.maxSpeed, 0, 1000, 0, (value) => {
   ship.maxSpeed = value
+})
+
+hudButton("explore", "explore", () => {
+  universe.goToSolarSystem(rndChoose(universe.solarSystems))
 })
 
 CANVAS.addEventListener("click", (e: MouseEvent) => {
@@ -119,6 +95,6 @@ setInterval(() => universe.update(), DT)
 
 draw(ship, universe)
 
-const astre = rndChoose(universe.getAstres().filter((astre) => astre.nbRings !== 0))
-ship.x = astre.realX
-ship.y = astre.realY
+// const astre = rndChoose(universe.getAstres().filter((astre) => astre.nbRings !== 0))
+// ship.x = astre.realX
+// ship.y = astre.realY

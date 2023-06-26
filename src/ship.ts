@@ -25,7 +25,7 @@ export class Ship extends Entity {
   reachRadius = 100
 
   constructor(private universe: Universe) {
-    super(30)
+    super(30, 0, 0)
 
     hudButton("quarry", "build quarry", () => {
       if (this.onAstre) {

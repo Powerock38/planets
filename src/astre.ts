@@ -110,7 +110,6 @@ export class Astre extends PolygonEntity {
       }
 
       if (newOre && isValidCircle) {
-        console.log(oreType.type)
         this.addChild(newOre)
       }
 

@@ -1,6 +1,6 @@
 import { Astre } from "./astre"
 import { Entity } from "./entity"
-import { hudButton, hudText } from "./hud"
+import { hudText } from "./hud"
 import { Inventory } from "./inventory"
 import { IMAGES } from "./main"
 import { Marker } from "./marker"
@@ -26,25 +26,25 @@ export class Ship extends Entity {
 
   constructor(private universe: Universe) {
     super(30, 0, 0)
+  }
 
-    hudButton("quarry", "build quarry", () => {
-      if (this.onAstre) {
-        const ore = (
-          this.onAstre.children.filter(
-            (ore) =>
-              ore instanceof Ore &&
-              ore.amount > 0 &&
-              !ore.children.find((child) => child instanceof Quarry)
-          ) as Ore[]
-        ).find((ore) => ore.collides(this.x, this.y))
+  buildQuarry() {
+    if (this.onAstre) {
+      const ore = (
+        this.onAstre.children.filter(
+          (ore) =>
+            ore instanceof Ore &&
+            ore.amount > 0 &&
+            !ore.children.find((child) => child instanceof Quarry)
+        ) as Ore[]
+      ).find((ore) => ore.collides(this.x, this.y))
 
-        if (ore) {
-          const quarry = new Quarry(ore, this.inventory)
-          ore.addChild(quarry)
-          console.log("built quarry", quarry)
-        }
+      if (ore) {
+        const quarry = new Quarry(ore, this.inventory)
+        ore.addChild(quarry)
+        console.log("built quarry", quarry)
       }
-    })
+    }
   }
 
   moveTo(x: number, y: number) {
@@ -91,21 +91,11 @@ export class Ship extends Entity {
 
     this.moveTowardsMarker()
 
-    const newX = this.x + influenceX + Math.cos(this.angle) * this.speed
-    const newY = this.y + influenceY + Math.sin(this.angle) * this.speed
-    const dx = newX - this.x
-    const dy = newY - this.y
-    hudText(
-      "direction",
-      `${(dx > 0 ? "right" : "left") + dx.toFixed(2)}
-      ${(dy > 0 ? "down" : "up") + dy.toFixed(2)}`
-    )
+    this.x = this.x + influenceX + Math.cos(this.angle) * this.speed
+    this.y = this.y + influenceY + Math.sin(this.angle) * this.speed
+    this.angle += this.speedAngle
 
     hudText("speed", "speed=" + this.speed.toFixed(2))
-
-    this.angle += this.speedAngle
-    this.x = newX
-    this.y = newY
   }
 
   private moveTowardsMarker() {

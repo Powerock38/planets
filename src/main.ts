@@ -1,24 +1,34 @@
-import { hudButton, hudSlider, hudText } from "./hud"
+import { hudButton, hudSlider, hudText, toggleHudValue } from "./hud"
 import { Ship } from "./ship"
 import { Vec2 } from "./types"
 import { Universe } from "./universe"
 import { loadImages, rndChoose } from "./utils"
 
 export const CANVAS = document.getElementById("canvas") as HTMLCanvasElement
-export const ctx = CANVAS.getContext("2d") as CanvasRenderingContext2D
+const ctx = CANVAS.getContext("2d") as CanvasRenderingContext2D
+
+export const BGCANVAS = document.getElementById(
+  "bg-canvas"
+) as HTMLCanvasElement
+export const bgCtx = BGCANVAS.getContext("2d") as CanvasRenderingContext2D
+
+const universe = new Universe(1000)
 
 function resizeCanvas() {
   CANVAS.width = document.body.clientWidth
   CANVAS.height = document.body.clientHeight
+  BGCANVAS.width = document.body.clientWidth
+  BGCANVAS.height = document.body.clientHeight
+  universe?.drawStars(bgCtx)
 }
 
 window.addEventListener("resize", resizeCanvas)
 resizeCanvas()
 
 //mousewheel zoom
-export let ZOOM = 0.001
 const MAX_ZOOM = 1
 const MIN_ZOOM = 0.004
+export let ZOOM = MIN_ZOOM
 document.addEventListener("wheel", (e) => {
   let mult = 1
   if (ZOOM > 0.1) {
@@ -41,7 +51,6 @@ export let CENTER_Y = -CANVAS.height / (2 * ZOOM)
 
 function draw(pov: Vec2, universe: Universe) {
   ctx.clearRect(0, 0, CANVAS.width, CANVAS.height)
-  universe.drawSelf(ctx)
 
   //center & zoom
   CENTER_X = pov.x - CANVAS.width / 2 / ZOOM
@@ -49,8 +58,8 @@ function draw(pov: Vec2, universe: Universe) {
 
   hudText("x", `x=${pov.x.toFixed(2)}`)
   hudText("y", `y=${pov.y.toFixed(2)}`)
-  hudText("centerX", `centerX=${CENTER_X.toFixed(2)}`)
-  hudText("centerY", `centerY=${CENTER_Y.toFixed(2)}`)
+  // hudText("centerX", `centerX=${CENTER_X.toFixed(2)}`)
+  // hudText("centerY", `centerY=${CENTER_Y.toFixed(2)}`)
 
   ctx.save()
   ctx.scale(ZOOM, ZOOM)
@@ -65,20 +74,36 @@ function draw(pov: Vec2, universe: Universe) {
 
 export const IMAGES = await loadImages(["ship", "quarry"])
 
-const universe = new Universe(1000)
-
 const ship = new Ship(universe)
 universe.addChild(ship)
+universe.goToSolarSystem(ship, universe.solarSystems[0])
+
+hudButton("explore", "explore", () => {
+  universe.goToSolarSystem(ship, rndChoose(universe.solarSystems))
+})
+
+hudButton("toggleOrbits", "toggle orbits", () => {
+  toggleHudValue("showOrbits")
+})
+
+hudButton("toggleGravityRanges", "toggle gravity ranges", () => {
+  toggleHudValue("showGravityRanges")
+})
+
+hudButton("toggleOreText", "toggle ore text", () => {
+  toggleHudValue("showOreText")
+})
+
+hudButton("buildQuarry", "build quarry", () => {
+  ship.buildQuarry()
+})
 
 hudSlider("thrust", ship.maxSpeed, 0, 1000, 0, (value) => {
   ship.maxSpeed = value
 })
 
-hudButton("explore", "explore", () => {
-  universe.goToSolarSystem(rndChoose(universe.solarSystems))
-})
-
 CANVAS.addEventListener("click", (e: MouseEvent) => {
+  e.preventDefault()
   const x = CENTER_X + e.clientX / ZOOM
   const y = CENTER_Y + e.clientY / ZOOM
   ship.moveTo(x, y)
@@ -94,7 +119,3 @@ export const DT = 1000 / 60
 setInterval(() => universe.update(), DT)
 
 draw(ship, universe)
-
-// const astre = rndChoose(universe.getAstres().filter((astre) => astre.nbRings !== 0))
-// ship.x = astre.realX
-// ship.y = astre.realY

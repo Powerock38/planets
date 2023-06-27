@@ -1,6 +1,7 @@
 import { Astre } from "./astre"
 import { Entity } from "./entity"
-import { CANVAS } from "./main"
+import { BGCANVAS, bgCtx } from "./main"
+import { Ship } from "./ship"
 import { rndChoose, rndInt } from "./utils"
 
 type SolarSystem = {
@@ -31,23 +32,21 @@ export class Universe extends Entity {
     super(0, 0, 0)
 
     for (let i = 0; i < nbSolarSystems; i++) {
-      const x = rndInt(0, CANVAS.width)
-      const y = rndInt(0, CANVAS.height)
+      const x = rndInt(0, nbSolarSystems)
+      const y = rndInt(0, nbSolarSystems)
       const color = rndChoose(Universe.starColors)
 
       this.solarSystems.push({ x, y, color })
     }
-
-    if (nbSolarSystems) {
-      this.goToSolarSystem(this.solarSystems[0])
-    }
   }
 
-  goToSolarSystem(solarSystem: SolarSystem) {
-    const astres = this.getAstres()
-    for (const astre of astres) {
-      this.removeChild(astre)
+  goToSolarSystem(ship: Ship, solarSystem: SolarSystem) {
+    const star = this.getCurrentStar()
+    if (star) {
+      this.removeChild(star)
     }
+
+    ship.onAstre = undefined
 
     if (!solarSystem.star) {
       solarSystem.star = new Astre(
@@ -68,6 +67,8 @@ export class Universe extends Entity {
     this.addChild(solarSystem.star, 0)
 
     console.log(this.children)
+
+    this.drawStars(bgCtx)
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -76,13 +77,19 @@ export class Universe extends Entity {
     }
   }
 
-  drawSelf(ctx: CanvasRenderingContext2D) {
+  drawSelf: undefined
+
+  drawStars(bgCtx: CanvasRenderingContext2D) {
+    bgCtx.clearRect(0, 0, BGCANVAS.width, BGCANVAS.height)
+    const star = this.getCurrentStar()
     for (const solarSystem of this.solarSystems) {
-      if (solarSystem.star?.id !== this.getAstres()[0].id) {
-        ctx.beginPath()
-        ctx.arc(solarSystem.x, solarSystem.y, 0.5, 0, Math.PI * 2) // TODO: replace with something more performant
-        ctx.fillStyle = solarSystem.color
-        ctx.fill()
+      if (solarSystem.star?.id !== star?.id) {
+        const x = (solarSystem.x / this.solarSystems.length) * BGCANVAS.width
+        const y = (solarSystem.y / this.solarSystems.length) * BGCANVAS.height
+        bgCtx.beginPath()
+        bgCtx.fillRect(x, y, 1, 1)
+        bgCtx.fillStyle = solarSystem.color
+        bgCtx.fill()
       }
     }
   }
@@ -95,6 +102,10 @@ export class Universe extends Entity {
     ) as Astre[]
 
     return astres.find(predicate)
+  }
+
+  getCurrentStar(): Astre | undefined {
+    return this.children.find((child) => child instanceof Astre) as Astre
   }
 
   getAstres(): Astre[] {

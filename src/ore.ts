@@ -1,3 +1,4 @@
+import { HUD_VALUES } from "./hud"
 import { PolygonEntity } from "./polygonentity"
 import { hexToRgb, rndChoose } from "./utils"
 
@@ -33,7 +34,10 @@ export class Ore extends PolygonEntity {
 
   updateSelf() {
     const radius = this.amount
-    const sides = Math.max(3, Math.floor((this.amount / this.oreType.max) * 9) + 3)
+    const sides = Math.max(
+      3,
+      Math.floor((this.amount / this.oreType.max) * 9) + 3
+    )
     if (radius !== this.radius || sides !== this.sides) {
       this.radius = radius
       this.sides = sides
@@ -46,12 +50,14 @@ export class Ore extends PolygonEntity {
     ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`
     super.drawSelf(ctx)
 
-    const fontSize = Math.max(100, this.amount)
-    ctx.fillStyle = "#fff"
-    ctx.font = `bold ${fontSize}px sans-serif`
-    ctx.textAlign = "center"
-    ctx.textBaseline = "middle"
-    ctx.fillText(this.oreType.type, this.x, this.y)
-    ctx.fillText(this.amount.toString(), this.x, this.y + fontSize)
+    if (HUD_VALUES.get("showOreText")) {
+      const fontSize = Math.max(100, this.amount)
+      ctx.fillStyle = "#fff"
+      ctx.font = `bold ${fontSize}px sans-serif`
+      ctx.textAlign = "center"
+      ctx.textBaseline = "middle"
+      ctx.fillText(this.oreType.type, this.x, this.y)
+      ctx.fillText(this.amount.toString(), this.x, this.y + fontSize)
+    }
   }
 }

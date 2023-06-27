@@ -1,3 +1,4 @@
+import { HUD_VALUES } from "./hud"
 import { Ore } from "./ore"
 import { PolygonEntity } from "./polygonentity"
 import { Vec2 } from "./types"
@@ -92,7 +93,10 @@ export class Astre extends PolygonEntity {
 
         // Generate random position within this astre
         const angle = Math.random() * 2 * Math.PI
-        const distanceFromCenter = rndInt(0, this.getInnerRadius() - randomRadius)
+        const distanceFromCenter = rndInt(
+          0,
+          this.getInnerRadius() - randomRadius
+        )
         const randomX = Math.round(distanceFromCenter * Math.cos(angle))
         const randomY = Math.round(distanceFromCenter * Math.sin(angle))
 
@@ -181,29 +185,33 @@ export class Astre extends PolygonEntity {
   }
 
   drawSelf(ctx: CanvasRenderingContext2D) {
-    // orbit
-    if (this.parent instanceof Astre && this.nbRings !== 0) {
-      ctx.lineWidth = this.radius / 200
-      ctx.beginPath()
-      ctx.arc(0, 0, Math.sqrt(this.x ** 2 + this.y ** 2), 0, 2 * Math.PI)
-      ctx.strokeStyle = "#F0F0F0"
-      ctx.stroke()
+    if (HUD_VALUES.get("showOrbits")) {
+      // orbit
+      if (this.parent instanceof Astre && this.nbRings !== 0) {
+        ctx.lineWidth = this.radius / 200
+        ctx.beginPath()
+        ctx.arc(0, 0, Math.sqrt(this.x ** 2 + this.y ** 2), 0, 2 * Math.PI)
+        ctx.strokeStyle = "#F0F0F0"
+        ctx.stroke()
+      }
     }
 
     // astre
     super.drawSelf(ctx)
 
-    // gravity field
-    if (this.mass) {
-      ctx.lineWidth = 20
-      ctx.setLineDash([this.mass / 10, this.mass / 10])
+    // gravity range
+    if (HUD_VALUES.get("showGravityRanges")) {
+      if (this.mass) {
+        ctx.lineWidth = 20
+        ctx.setLineDash([this.mass / 10, this.mass / 10])
 
-      ctx.beginPath()
-      ctx.arc(this.x, this.y, this.radius + this.mass, 0, 2 * Math.PI)
-      ctx.strokeStyle = "yellow"
-      ctx.stroke()
+        ctx.beginPath()
+        ctx.arc(this.x, this.y, this.radius + this.mass, 0, 2 * Math.PI)
+        ctx.strokeStyle = "yellow"
+        ctx.stroke()
 
-      ctx.setLineDash([])
+        ctx.setLineDash([])
+      }
     }
   }
 

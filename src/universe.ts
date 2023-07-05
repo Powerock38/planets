@@ -28,6 +28,8 @@ export class Universe extends Entity {
 
   solarSystems: SolarSystem[] = []
 
+  currentSolarSystem: SolarSystem
+
   constructor(nbSolarSystems: number) {
     super(0, 0, 0)
 
@@ -38,6 +40,8 @@ export class Universe extends Entity {
 
       this.solarSystems.push({ x, y, color })
     }
+
+    this.currentSolarSystem = this.solarSystems[0]
   }
 
   goToSolarSystem(ship: Ship, solarSystem: SolarSystem) {
@@ -66,7 +70,7 @@ export class Universe extends Entity {
 
     this.addChild(solarSystem.star, 0)
 
-    console.log(this.children)
+    this.currentSolarSystem = solarSystem
 
     this.drawStars(bgCtx)
   }
@@ -79,8 +83,9 @@ export class Universe extends Entity {
 
   drawSelf: undefined
 
-  drawStars(bgCtx: CanvasRenderingContext2D) {
-    bgCtx.clearRect(0, 0, BGCANVAS.width, BGCANVAS.height)
+  drawStars(bgCtx: CanvasRenderingContext2D, clear = true) {
+    if (clear) bgCtx.clearRect(0, 0, BGCANVAS.width, BGCANVAS.height)
+
     const star = this.getCurrentStar()
     for (const solarSystem of this.solarSystems) {
       if (solarSystem.star?.id !== star?.id) {

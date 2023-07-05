@@ -1,8 +1,6 @@
 import { CANVAS, CENTER_X, CENTER_Y, ZOOM } from "./main";
 
 export abstract class Entity {
-  static all: Entity[] = []
-
   static generateId() {
     return Math.floor(Math.random() * 1000000)
   }
@@ -78,13 +76,20 @@ export abstract class Entity {
     }
   }
 
-  getChildrenFlat(): Entity[] {
-    if (this.children && this.childrenFlat.length === 0) {
-      for (const child of this.children) {
-        this.childrenFlat.push(...child.getChildrenFlat())
-        this.childrenFlat.push(child)
-      }
+  removeFromParent() {
+    if (this.parent) {
+      this.parent.removeChild(this)
     }
+  }
+
+  getChildrenFlat() {
+    // if (this.children && this.childrenFlat.length === 0) {
+    this.childrenFlat = []
+    for (const child of this.children) {
+      this.childrenFlat.push(...child.getChildrenFlat())
+      this.childrenFlat.push(child)
+    }
+    // }
     return this.childrenFlat
   }
 }

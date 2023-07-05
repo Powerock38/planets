@@ -1,6 +1,18 @@
 const hud = document.getElementById("hud") as HTMLDivElement
 
-export const HUD_VALUES = new Map<string, string | number | boolean>()
+export const HUD_VALUES = new Map<string, string | number | boolean | object>()
+
+const KEYS_IDS = new Map<string, string>()
+
+document.addEventListener("keydown", (e) => {
+  const id = KEYS_IDS.get(e.key)
+  if (id) {
+    const button = hud.querySelector(
+      "button#" + id
+    ) as HTMLButtonElement | null
+    button?.click()
+  }
+})
 
 export function toggleHudValue(id: string) {
   const value = HUD_VALUES.get(id)
@@ -20,17 +32,26 @@ export function hudText(id: string, text: string) {
   }
 }
 
-export function hudButton(id: string, text: string, onClick: () => void) {
+export function hudButton(
+  id: string,
+  text: string,
+  onClick: () => void,
+  key?: string
+) {
   const button = hud.querySelector("button#" + id)
   if (button) {
-    button.textContent = text
+    button.textContent = text + (key ? ` (${key})` : "")
   } else {
     const button = document.createElement("button")
+    button.id = id
     button.style.pointerEvents = "auto"
     button.style.margin = "10px"
-    button.textContent = text
+    button.textContent = text + (key ? ` (${key})` : "")
     button.addEventListener("click", onClick)
     hud.appendChild(button)
+    if (key) {
+      KEYS_IDS.set(key, id)
+    }
   }
 }
 
@@ -47,6 +68,7 @@ export function hudSlider(
     slider.value = value.toString()
   } else {
     const slider = document.createElement("input")
+    slider.id = id
     slider.type = "range"
     slider.min = min.toString()
     slider.max = max.toString()

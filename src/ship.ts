@@ -4,8 +4,6 @@ import { hudText } from "./hud"
 import { Inventory } from "./inventory"
 import { IMAGES } from "./main"
 import { Marker } from "./marker"
-import { Ore } from "./ore"
-import { Quarry } from "./quarry"
 import { Universe } from "./universe"
 import { rndChoose, rndInt } from "./utils"
 
@@ -16,42 +14,23 @@ export class Ship extends Entity {
   speed = 0
   speedAngle = 0
   maxSpeed = 300
+  stopSpeedMultiplier = 0.1
   maxSpeedAngle = 0.2
   marker?: Marker
   initialDistance = 0
 
   onAstre?: Astre
-  inventory = new Inventory()
-  reachRadius = 100
+  inventory = new Inventory(500)
+  reachRadius = 1000
 
-  constructor(private universe: Universe) {
+  constructor(public universe: Universe) {
     super(30, 0, 0)
-  }
-
-  buildQuarry() {
-    if (this.onAstre) {
-      const ore = (
-        this.onAstre.children.filter(
-          (ore) =>
-            ore instanceof Ore &&
-            ore.amount > 0 &&
-            !ore.children.find((child) => child instanceof Quarry)
-        ) as Ore[]
-      ).find((ore) => ore.collides(this.x, this.y))
-
-      if (ore) {
-        const quarry = new Quarry(ore, this.inventory)
-        ore.addChild(quarry)
-        console.log("built quarry", quarry)
-      }
-    }
   }
 
   moveTo(x: number, y: number) {
     const target = this.universe.findAstre((astre) =>
       astre.collidesInGravityRange(x, y)
     )
-    console.log(target)
     this.marker = new Marker(x, y, target)
     this.initialDistance = Math.sqrt((this.x - x) ** 2 + (this.y - y) ** 2)
   }
@@ -70,6 +49,8 @@ export class Ship extends Entity {
       ? [this.onAstre, ...this.universe.getAstresExcept(this.onAstre)]
       : this.universe.getAstres()
 
+    let effectivelyOnAstre = false
+
     for (const astre of astres) {
       if (astre.collidesInGravityRange(this.x, this.y)) {
         if (this.onAstre !== astre) {
@@ -81,12 +62,15 @@ export class Ship extends Entity {
         influenceX = newAbsolutePos.x - this.onAstre.realX
         influenceY = newAbsolutePos.y - this.onAstre.realY
 
+        effectivelyOnAstre = true
+
         break
-        // const gravity = Math.min(this.maxSpeed * 0.5, astre.mass * (gravityRange / (distanceFromCenter - astre.radius) ** 2))
-        // const angle = Math.atan2(dy, dx)
-        // influenceX += Math.cos(angle) * gravity
-        // influenceY += Math.sin(angle) * gravity
       }
+    }
+
+    if (this.onAstre && !effectivelyOnAstre) {
+      console.log("leaving", this.onAstre)
+      this.onAstre = undefined
     }
 
     this.moveTowardsMarker()
@@ -115,7 +99,7 @@ export class Ship extends Entity {
       this.speedAngle =
         Math.min(Math.abs(angleDiff), this.maxSpeedAngle) * Math.sign(angleDiff)
 
-      this.speed = Math.min(distance, this.maxSpeed)
+      this.speed = Math.min(distance * this.stopSpeedMultiplier, this.maxSpeed)
 
       if (distance <= this.maxSpeed) {
         this.removeMovingMarker()

@@ -2,6 +2,56 @@ import { Entity } from "./entity"
 import { Vec2 } from "./types"
 
 export abstract class PolygonEntity extends Entity {
+  static doPolygonsCollide(vertices1: Vec2[], vertices2: Vec2[]) {
+    for (const vertices of [vertices1, vertices2]) {
+      for (let i = 0; i < vertices.length; i++) {
+        const p1 = vertices[i]
+        const p2 = vertices[(i + 1) % vertices.length]
+        const normal = { x: p2.y - p1.y, y: p1.x - p2.x }
+
+        const minMax1 = this.getMinMax(vertices1, normal)
+        const minMax2 = this.getMinMax(vertices2, normal)
+
+        if (minMax1.min > minMax2.max || minMax1.max < minMax2.min) {
+          return false
+        }
+      }
+    }
+
+    return true
+  }
+
+  static getMinMax(vertices: Vec2[], normal: Vec2) {
+    let min = Infinity
+    let max = -Infinity
+
+    for (const vertex of vertices) {
+      const projection = vertex.x * normal.x + vertex.y * normal.y
+      min = Math.min(min, projection)
+      max = Math.max(max, projection)
+    }
+
+    return { min, max }
+  }
+
+  static generateVertices(radius: number, sides: number) {
+    const verticesRelative = []
+    for (let i = 0; i < sides; i++) {
+      const angle = (Math.PI * 2 * i) / sides
+      const vertexX = Math.cos(angle) * radius
+      const vertexY = Math.sin(angle) * radius
+      verticesRelative.push({ x: vertexX, y: vertexY })
+    }
+    return verticesRelative
+  }
+
+  static relativeToAbsolute(verticesRelative: Vec2[], x: number, y: number) {
+    return verticesRelative.map((vertex) => ({
+      x: vertex.x + x,
+      y: vertex.y + y,
+    }))
+  }
+
   verticesRelative: Vec2[] = []
 
   constructor(
@@ -19,13 +69,18 @@ export abstract class PolygonEntity extends Entity {
   }
 
   generateVertices() {
-    this.verticesRelative = []
-    for (let i = 0; i < this.sides; i++) {
-      const angle = (Math.PI * 2 * i) / this.sides
-      const vertexX = Math.cos(angle) * this.radius
-      const vertexY = Math.sin(angle) * this.radius
-      this.verticesRelative.push({ x: vertexX, y: vertexY })
-    }
+    this.verticesRelative = PolygonEntity.generateVertices(
+      this.radius,
+      this.sides
+    )
+  }
+
+  getVerticesAbsolute() {
+    return PolygonEntity.relativeToAbsolute(
+      this.verticesRelative,
+      this.realX,
+      this.realY
+    )
   }
 
   drawSelf(ctx: CanvasRenderingContext2D) {

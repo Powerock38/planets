@@ -4,10 +4,11 @@ body {
   height: 100%;
   overflow: hidden;
   font-family: monospace;
+  background-color: black;
 }
 
-#bg-canvas {
-  background-color: black;
+* {
+  user-select: none;
 }
 
 canvas {
